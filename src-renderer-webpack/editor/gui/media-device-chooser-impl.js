@@ -13,27 +13,29 @@ const constrain = (originalConstraint, deviceId, allDevices) => {
   return originalConstraint;
 };
 
-const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  const originalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 
-navigator.mediaDevices.getUserMedia = async (constraints) => {
-  const allDevices = await navigator.mediaDevices.enumerateDevices();
-  const preferredDevices = await EditorPreload.getPreferredMediaDevices();
+  navigator.mediaDevices.getUserMedia = async (constraints) => {
+    const allDevices = await navigator.mediaDevices.enumerateDevices();
+    const preferredDevices = await EditorPreload.getPreferredMediaDevices();
 
-  if (constraints.audio) {
-    constraints.audio = constrain(
-      constraints.audio,
-      preferredDevices.microphone,
-      allDevices.filter((i) => i.kind === 'audioinput')
-    );
-  }
+    if (constraints.audio) {
+      constraints.audio = constrain(
+        constraints.audio,
+        preferredDevices.microphone,
+        allDevices.filter((i) => i.kind === 'audioinput')
+      );
+    }
 
-  if (constraints.video) {
-    constraints.video = constrain(
-      constraints.video,
-      preferredDevices.camera,
-      allDevices.filter((i) => i.kind === 'videoinput')
-    );
-  }
+    if (constraints.video) {
+      constraints.video = constrain(
+        constraints.video,
+        preferredDevices.camera,
+        allDevices.filter((i) => i.kind === 'videoinput')
+      );
+    }
 
-  return originalGetUserMedia(constraints);
-};
+    return originalGetUserMedia(constraints);
+  };
+}

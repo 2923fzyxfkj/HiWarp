@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 助手</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Segoe UI", sans-serif;
+      background: #0b151d;
+      color: #eef5fa;
+      --bg: #0b151d;
+      --panel: rgba(20, 37, 48, .78);
+      --panel-strong: rgba(24, 45, 58, .92);
+      --line: rgba(145, 204, 214, .2);
+      --muted: #9db6c1;
+      --accent: #1e91a4;
+      --accent-dark: #126f84;
+      --warn: #bd6f2a;
+      --danger: #ff9b95;
+      --ok: #9be7a1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 82% -8%, rgba(62, 132, 139, .45) 0, transparent 34%),
+        radial-gradient(circle at 8% 105%, rgba(189, 111, 42, .18) 0, transparent 30%),
+        linear-gradient(155deg, #162934 0%, var(--bg) 100%);
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.6), transparent 72%);
+    }
+    header {
+      position: relative;
+      flex: 0 0 auto;
+      min-height: 72px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      background: rgba(13, 28, 38, .72);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, .2);
+      backdrop-filter: blur(16px);
+    }
+    header strong { font-size: 20px; letter-spacing: .02em; }
+    header small { display: block; margin-top: 4px; color: var(--muted); }
+    .titleBlock { min-width: 0; }
+    #headerActions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+    #settings {
+      position: relative;
+      flex: 0 1 auto;
+      max-height: 58vh;
+      overflow-y: auto;
+      margin: 14px 16px 0;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 16px 42px rgba(0, 0, 0, .2);
+      backdrop-filter: blur(16px);
+    }
+    #settings[hidden] { display: none; }
+    #messages { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 18px 18px 8px; }
+    .message {
+      max-width: 84%;
+      overflow-wrap: anywhere;
+      padding: 12px 14px;
+      border-radius: 17px 17px 17px 4px;
+      margin-bottom: 13px;
+      background: rgba(35, 55, 68, .92);
+      border: 1px solid rgba(165, 219, 225, .14);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, .16);
+      line-height: 1.55;
+    }
+    .messageHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .messageText {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .speakMessage {
+      min-height: 24px;
+      padding: 3px 9px;
+      font-size: 12px;
+      background: rgba(62, 91, 106, .82);
+      box-shadow: none;
+    }
+    .user {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      margin-left: auto;
+      border-radius: 17px 17px 4px 17px;
+    }
+    .error { color: var(--danger); margin-top: 7px; }
+    .success { color: var(--ok); margin-top: 7px; }
+    label { display: block; margin: 11px 0; color: #d1e0e6; font-size: 13px; }
+    input, select, textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 12px;
+      margin-top: 6px;
+      border: 1px solid rgba(113, 158, 174, .45);
+      border-radius: 11px;
+      background: rgba(8, 21, 29, .78);
+      color: inherit;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #29a9bd; box-shadow: 0 0 0 3px rgba(40, 163, 185, .18); }
+    button {
+      min-height: 36px;
+      padding: 8px 13px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(11, 93, 111, .22);
+    }
+    #openLogs, #toggleSettings, #newSession, #continueLast { background: rgba(62, 91, 106, .84); box-shadow: none; }
+    button:hover { filter: brightness(1.08); }
+    button:disabled { opacity: .55; cursor: default; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 13px; }
+    .action-row > button { flex: 1 1 130px; }
+    #upload { background: linear-gradient(135deg, #d08237, var(--warn)); }
+    #modelChoices { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+    #modelChoices button { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    #custom { margin: 9px 0; max-height: 180px; padding: 8px 10px; overflow: auto; border-radius: 12px; background: rgba(8, 21, 29, .52); border: 1px solid rgba(145, 204, 214, .12); }
+    #custom label { margin-left: 12px; }
+    #custom input, #permissions input { width: auto; margin: 0 6px 0 0; }
+    #permissions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 12px; margin-top: 8px; }
+    #security { display: block; width: 100%; color: #9db5c0; font-size: 12px; line-height: 1.4; }
+    footer { position: relative; flex: 0 0 auto; padding: 13px 16px 16px; background: rgba(13, 28, 38, .72); border-top: 1px solid var(--line); backdrop-filter: blur(16px); }
+    #composer { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 9px; align-items: stretch; }
+    #composer textarea { min-height: 64px; max-height: 150px; resize: vertical; margin: 0; }
+    #voice, #send { min-width: 72px; }
+    @media (max-width: 420px) {
+      #permissions { grid-template-columns: 1fr; }
+      #composer { grid-template-columns: 1fr; }
+      #send { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="titleBlock"><strong>AI 助手</strong><small>与编辑器侧边栏共享当前会话</small></div>
+    <div id="headerActions"><button id="newSession" hidden>新会话</button><button id="continueLast" hidden>延续上次会话</button><button id="openLogs">日志</button><button id="toggleSettings">设置</button></div>
+  </header>
+  <section id="settings">
+    <label>API 地址<input id="apiUrl" placeholder="https://api.deepseek.com/v1"></label>
+    <label>API Key<input id="apiKey" type="password" placeholder="已保存时留空即可"></label>
+    <label>模型<input id="model" placeholder="可手动输入模型名称"></label>
+    <div class="action-row"><button id="models">获取模型</button><span id="modelChoices"></span></div>
+    <label>搜索网址模板<input id="searchUrlTemplate" placeholder="https://cn.bing.com/search?q={ask}"></label>
+    <label>选择代理<select id="searchProxyMode"><option value="system">使用系统代理</option><option value="none">不使用代理</option><option value="custom">设置代理地址</option></select></label>
+    <label id="searchProxyAddressLabel" hidden>代理地址<input id="searchProxyAddress" placeholder="http://127.0.0.1:7890"></label>
+    <label>选择请求工具<select id="searchRequestTool"><option value="curl">系统的 Curl</option><option value="python-requests">Python 的 Requests</option><option value="custom">自定义指令</option></select></label>
+    <label id="searchCustomCommandLabel" hidden>自定义指令<input id="searchCustomCommand" placeholder='curl -L "{url}"'></label>
+    <label>上下文<select id="contextMode"><option value="target">这个角色</option><option value="project">这个项目</option><option value="custom">自定义</option></select></label>
+    <div id="custom"></div>
+    <div id="permissions"></div>
+    <div class="action-row"><button id="save">保存设置</button><button id="upload">上传上下文</button><span id="security"></span></div>
+  </section>
+  <main id="messages"></main>
+  <footer><div id="composer"><textarea id="text" placeholder="描述要实现的 Scratch 功能" rows="3"></textarea><button id="voice">语音</button><button id="send">发送</button></div></footer>
+  <script>
+    const api = window.AIChatPreload;
+    const controls = {
+      apiUrl: document.querySelector('#apiUrl'),
+      apiKey: document.querySelector('#apiKey'),
+      model: document.querySelector('#model'),
+      searchUrlTemplate: document.querySelector('#searchUrlTemplate'),
+      searchProxyMode: document.querySelector('#searchProxyMode'),
+      searchProxyAddress: document.querySelector('#searchProxyAddress'),
+      searchRequestTool: document.querySelector('#searchRequestTool'),
+      searchCustomCommand: document.querySelector('#searchCustomCommand'),
+      contextMode: document.querySelector('#contextMode'),
+      messages: document.querySelector('#messages'),
+      text: document.querySelector('#text'),
+      voice: document.querySelector('#voice'),
+      send: document.querySelector('#send'),
+      continueLast: document.querySelector('#continueLast'),
+      newSession: document.querySelector('#newSession')
+    };
+    let state;
+    let selection = {targetIds: [], scriptIds: {}};
+    const permissionNames = {
+      insertScript: '新建脚本',
+      replaceScript: '替换脚本',
+      deleteScript: '删除脚本',
+      updateVariable: '编辑变量',
+      updateSprite: '编辑角色属性'
+    };
+
+    const selected = (targetId, scriptId) => (selection.scriptIds[targetId] || []).includes(scriptId);
+
+    const getSpeakableAIText = text => {
+      const raw = String(text || '');
+      const withoutCodeBlocks = raw.replace(/```[\s\S]*?```/g, '').trim();
+      return withoutCodeBlocks || raw.trim();
+    };
+
+    let speakingMessageId = null;
+    let activeUtterance = null;
+    const refreshMessages = () => {
+      if (state) render(state);
+    };
+    const stopSpeaking = () => {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      activeUtterance = null;
+      speakingMessageId = null;
+      refreshMessages();
+    };
+    const toggleSpeakMessage = (messageId, text) => {
+      if (speakingMessageId === messageId) {
+        stopSpeaking();
+        return;
+      }
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+        alert('当前系统不支持朗读。');
+        return;
+      }
+      const speechText = getSpeakableAIText(text);
+      if (!speechText) return;
+      window.speechSynthesis.cancel();
+      const utterance = new window.SpeechSynthesisUtterance(speechText);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 1;
+      utterance.onend = () => {
+        if (activeUtterance === utterance) {
+          activeUtterance = null;
+          speakingMessageId = null;
+          refreshMessages();
+        }
+      };
+      utterance.onerror = utterance.onend;
+      activeUtterance = utterance;
+      speakingMessageId = messageId;
+      refreshMessages();
+      window.speechSynthesis.speak(utterance);
+    };
+
+    const sendText = async text => {
+      const trimmedText = String(text || '').trim();
+      if (!trimmedText) return;
+      controls.text.value = '';
+      try {
+        await api.sendMessage(trimmedText, selection);
+      } catch (error) {
+        console.error('[AI] send failed', error);
+        alert(error.message);
+      }
+    };
+
+    let isListening = false;
+
+    const startVoiceInput = async () => {
+      if (isListening) return;
+      if (typeof api.recognizeSpeech !== 'function') {
+        alert('当前版本不支持本地语音识别。');
+        return;
+      }
+      isListening = true;
+      controls.voice.textContent = '聆听中';
+      controls.voice.disabled = true;
+      try {
+        const text = await api.recognizeSpeech();
+        const trimmedText = String(text || '').trim();
+        if (trimmedText) {
+          const current = controls.text.value || '';
+          const separator = current && !/\s$/.test(current) ? ' ' : '';
+          controls.text.value = `${current}${separator}${trimmedText}`;
+        }
+      } catch (error) {
+        console.error('[AI] native speech recognition failed', error);
+        alert(error.message);
+      } finally {
+        isListening = false;
+        controls.voice.textContent = '语音';
+        controls.voice.disabled = false;
+      }
+    };
+    const toggle = (targetId, scriptId) => {
+      const scripts = selection.scriptIds[targetId] || [];
+      selection.scriptIds[targetId] = scripts.includes(scriptId) ? scripts.filter(id => id !== scriptId) : scripts.concat(scriptId);
+      if (!selection.targetIds.includes(targetId)) selection.targetIds.push(targetId);
+      renderCustom();
+      controls.newSession.hidden = state.messages.length === 0;
+      controls.continueLast.hidden = !state.canContinueLastSession;
+      controls.continueLast.textContent = `延续上次会话${state.savedSessionMessageCount ? ` (${state.savedSessionMessageCount})` : ''}`;
+    };
+
+    const renderCustom = () => {
+      const root = document.querySelector('#custom');
+      root.innerHTML = '';
+      if (!state || state.config.contextMode !== 'custom') return;
+      state.contextCatalog.forEach(target => {
+        const targetLabel = document.createElement('label');
+        targetLabel.innerHTML = `<input type="checkbox" ${selection.targetIds.includes(target.id) ? 'checked' : ''}> ${target.name}`;
+        targetLabel.querySelector('input').onchange = () => {
+          selection.targetIds = selection.targetIds.includes(target.id) ? selection.targetIds.filter(id => id !== target.id) : selection.targetIds.concat(target.id);
+          renderCustom();
+        };
+        root.appendChild(targetLabel);
+        if (selection.targetIds.includes(target.id)) target.scripts.forEach(script => {
+          const label = document.createElement('label');
+          label.innerHTML = `<input type="checkbox" ${selected(target.id, script.id) ? 'checked' : ''}> ${script.opcode}`;
+          label.querySelector('input').onchange = () => toggle(target.id, script.id);
+          root.appendChild(label);
+        });
+      });
+    };
+
+    const render = next => {
+      state = next;
+      const config = state.config;
+      controls.apiUrl.value = config.apiUrl;
+      controls.model.value = config.model;
+      controls.searchUrlTemplate.value = config.webSearch && config.webSearch.urlTemplate || '';
+      controls.searchProxyMode.value = config.webSearch && config.webSearch.proxyMode || 'system';
+      controls.searchProxyAddress.value = config.webSearch && config.webSearch.proxyAddress || '';
+      controls.searchRequestTool.value = config.webSearch && config.webSearch.requestTool || 'curl';
+      controls.searchCustomCommand.value = config.webSearch && config.webSearch.customCommand || '';
+      document.querySelector('#searchProxyAddressLabel').hidden = controls.searchProxyMode.value !== 'custom';
+      document.querySelector('#searchCustomCommandLabel').hidden = controls.searchRequestTool.value !== 'custom';
+      controls.contextMode.value = config.contextMode;
+      document.querySelector('#security').textContent = config.secureStorageAvailable ? (config.hasApiKey ? 'API Key 已安全保存' : '') : '安全存储不可用，Key 只保存到本次运行结束';
+      const permissions = document.querySelector('#permissions');
+      permissions.innerHTML = '';
+      Object.entries(config.permissions).forEach(([name, enabled]) => {
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" ${enabled ? 'checked' : ''}> ${permissionNames[name] || name}`;
+        label.querySelector('input').onchange = event => {
+          state.config.permissions[name] = event.currentTarget.checked;
+        };
+        permissions.appendChild(label);
+      });
+      renderCustom();
+      controls.newSession.hidden = state.messages.length === 0;
+      controls.continueLast.hidden = !state.canContinueLastSession;
+      controls.continueLast.textContent = `延续上次会话${state.savedSessionMessageCount ? ` (${state.savedSessionMessageCount})` : ''}`;
+      controls.messages.innerHTML = '';
+      state.messages.forEach((message, index) => {
+        const item = document.createElement('div');
+        item.className = `message ${message.role === 'user' ? 'user' : ''}`;
+        const header = document.createElement('div');
+        header.className = 'messageHeader';
+        const title = document.createElement('b');
+        title.textContent = `${message.role === 'user' ? '你' : 'AI'}:`;
+        header.appendChild(title);
+        if (message.role !== 'user') {
+          const speakButton = document.createElement('button');
+          speakButton.className = 'speakMessage';
+          speakButton.type = 'button';
+          const messageId = `message-${index}`;
+          speakButton.textContent = speakingMessageId === messageId ? '停止' : '朗读';
+          speakButton.onclick = () => toggleSpeakMessage(messageId, message.content);
+          header.appendChild(speakButton);
+        }
+        const content = document.createElement('div');
+        content.className = 'messageText';
+        content.textContent = message.content;
+        item.appendChild(header);
+        item.appendChild(content);
+        if (message.error) {
+          const error = document.createElement('div');
+          error.className = 'error';
+          error.textContent = message.error;
+          item.appendChild(error);
+        }
+        if (message.operationResult) {
+          const result = document.createElement('div');
+          result.className = message.operationResult.ok === false ? 'error' : 'success';
+          result.textContent = message.operationResult.ok === false ?
+            `AI 操作执行失败: ${message.operationResult.error || '未知错误'}` :
+            '已自动执行 AI 操作。';
+          item.appendChild(result);
+        }
+        controls.messages.appendChild(item);
+      });
+      controls.messages.scrollTop = controls.messages.scrollHeight;
+      controls.send.disabled = state.isStreaming;
+      controls.voice.disabled = isListening;
+    };
+
+    document.querySelector('#toggleSettings').onclick = () => document.querySelector('#settings').hidden = !document.querySelector('#settings').hidden;
+    document.querySelector('#openLogs').onclick = () => api.openLogDirectory();
+    controls.continueLast.onclick = () => api.continueLastSession().catch(error => {
+      console.error('[AI] continue last session failed', error);
+      alert(error.message);
+    });
+    controls.newSession.onclick = () => api.startNewSession().catch(error => {
+      console.error('[AI] start new session failed', error);
+      alert(error.message);
+    });
+    controls.searchProxyMode.onchange = () => {
+      document.querySelector('#searchProxyAddressLabel').hidden = controls.searchProxyMode.value !== 'custom';
+    };
+    controls.searchRequestTool.onchange = () => {
+      document.querySelector('#searchCustomCommandLabel').hidden = controls.searchRequestTool.value !== 'custom';
+    };
+    document.querySelector('#save').onclick = async () => {
+      await api.saveConfig({
+        ...state.config,
+        apiUrl: controls.apiUrl.value,
+        model: controls.model.value,
+        contextMode: controls.contextMode.value,
+        webSearch: {
+          ...(state.config.webSearch || {}),
+          urlTemplate: controls.searchUrlTemplate.value,
+          proxyMode: controls.searchProxyMode.value,
+          proxyAddress: controls.searchProxyAddress.value,
+          requestTool: controls.searchRequestTool.value,
+          customCommand: controls.searchCustomCommand.value
+        },
+        apiKey: controls.apiKey.value
+      });
+      controls.apiKey.value = '';
+    };
+    document.querySelector('#models').onclick = async () => {
+      try {
+        const models = await api.fetchModels();
+        const root = document.querySelector('#modelChoices');
+        root.innerHTML = '';
+        models.forEach(model => {
+          const button = document.createElement('button');
+          button.textContent = model;
+          button.onclick = () => {
+            controls.model.value = model;
+            state.config.model = model;
+          };
+          root.appendChild(button);
+        });
+      } catch (error) {
+        console.error('[AI] fetch models failed', error);
+        alert(error.message);
+      }
+    };
+    document.querySelector('#upload').onclick = () => api.uploadContext(selection).catch(error => {
+      console.error('[AI] upload context failed', error);
+      alert(error.message);
+    });
+    controls.voice.onclick = startVoiceInput;
+    controls.send.onclick = () => sendText(controls.text.value);
+    controls.text.onkeydown = event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        controls.send.click();
+      }
+    };
+    api.onState(render);
+    api.getState().then(render);
+  </script>
+</body>
+</html>

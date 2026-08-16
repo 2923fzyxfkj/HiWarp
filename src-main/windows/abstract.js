@@ -1,7 +1,8 @@
-const { BrowserWindow, screen, session } = require('electron');
+const {app, BrowserWindow, screen, session} = require('electron');
 const path = require('path');
 const openExternal = require('../open-external');
 const settings = require('../settings');
+const {attachWebContentsLogging} = require('../logging');
 
 /** @type {Map<unknown, AbstractWindow[]>} */
 const windowsByClass = new Map();
@@ -19,6 +20,7 @@ class AbstractWindow {
 
     /** @type {Electron.BrowserWindow} */
     this.window = options.existingWindow || new BrowserWindow(this.getWindowOptions());
+    attachWebContentsLogging(this.window.webContents, this.constructor.name);
     this.window.webContents.on('before-input-event', this.handleInput.bind(this));
     this.applySettings();
 
@@ -187,12 +189,9 @@ class AbstractWindow {
     }
 
     options.backgroundColor = this.getBackgroundColor();
-
-    // On Linux the icon doesn't get baked into the executable as it does on other platforms
-    if (process.platform === 'linux') {
-      // This path won't work in development but it will work in production
-      options.icon = path.resolve(__dirname, '../../../icon.png');
-    }
+    options.icon = app.isPackaged ?
+      path.join(process.resourcesPath, 'icon.png') :
+      path.resolve(__dirname, '../../art/icon.png');
 
     return options;
   }
@@ -213,6 +212,16 @@ class AbstractWindow {
    * @param {Electron.HandlerDetails} details
    */
   handleWindowOpen (details) {
+    const parsed = new URL(details.url);
+    if (parsed.protocol === 'tw-feedback:') {
+      // Imported lazily to avoid a circular dependency at startup.
+      const FeedbackWindow = require('./feedback');
+      FeedbackWindow.show();
+      return {
+        action: 'deny'
+      };
+    }
+
     openExternal(details.url);
     return {
       action: 'deny'

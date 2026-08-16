@@ -29,7 +29,7 @@ export const persistentFetch = async (url, opts) => {
     try {
       const response = await fetch(url, opts);
       if (response.status !== 200) {
-        throw new Error(`${md5ext}: Unexpected status code: ${response.status}`);
+        throw new Error(`${url}: Unexpected status code: ${response.status}`);
       }
       return response;
     } catch (e) {

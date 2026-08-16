@@ -3,6 +3,7 @@ const path = require('path');
 const nodeURL = require('url');
 const zlib = require('zlib');
 const nodeCrypto = require('crypto');
+const {compressToHWP, decompressFromHWP, isHWPBuffer} = require('../seven-zip');
 const {app, dialog} = require('electron');
 const ProjectRunningWindow = require('./project-running-window');
 const AddonsWindow = require('./addons');
@@ -19,6 +20,7 @@ const privilegedFetch = require('../fetch');
 const RichPresence = require('../rich-presence.js');
 const FileAccessWindow = require('./file-access-window.js');
 const ExtensionDocumentationWindow = require('./extension-documentation.js');
+const AIService = require('../ai-service');
 
 const TYPE_FILE = 'file';
 const TYPE_URL = 'url';
@@ -218,6 +220,9 @@ class EditorWindow extends ProjectRunningWindow {
    */
   constructor (initialFile, isInitiallyFullscreen) {
     super();
+    this.aiService = new AIService(this);
+    this.aiService.attachIPC(this.ipc, true);
+    this.restrictedProjectMode = null;
 
     /**
      * Ideally we would revoke access after loading a new project, but our file handle handling in
@@ -313,6 +318,18 @@ class EditorWindow extends ProjectRunningWindow {
     this.ipc.handle('get-file', async (event, id) => {
       const file = getFileById(id);
       const {name, data} = await file.read();
+
+      // Auto-detect and decompress .hwp files
+      // .hwp = HWP\x01 magic header + 7z(LZMA2) compressed SB3
+      if (name.endsWith('.hwp') || isHWPBuffer(data)) {
+        const sb3Data = await decompressFromHWP(data);
+        return {
+          name: name.replace(/\.hwp$/i, '.sb3'),
+          type: file.type,
+          data: sb3Data
+        };
+      }
+
       return {
         name,
         type: file.type,
@@ -362,6 +379,14 @@ class EditorWindow extends ProjectRunningWindow {
         defaultPath: settings.lastDirectory,
         filters: [
           {
+            name: 'All Support',
+            extensions: ['hwp', 'sb3', 'sb2', 'sb'],
+          },
+          {
+            name: 'HiWarp Project',
+            extensions: ['hwp'],
+          },
+          {
             name: 'Scratch Project',
             extensions: ['sb3', 'sb2', 'sb'],
           }
@@ -384,15 +409,27 @@ class EditorWindow extends ProjectRunningWindow {
       };
     });
 
+    this.ipc.handle('convert-to-hwp', async (event, sb3Data) => {
+      // Convert SB3 buffer to HWP format
+      // sb3Data is the raw SB3 file bytes
+      const hwpData = await compressToHWP(Buffer.from(sb3Data));
+      return hwpData;
+    });
+
     this.ipc.handle('show-save-file-picker', async (event, suggestedName) => {
+      const filters = [
+        {
+          name: 'HiWarp Project',
+          extensions: ['hwp'],
+        },
+        {
+          name: 'Scratch 3 Project',
+          extensions: ['sb3'],
+        }
+      ];
       const result = await dialog.showSaveDialog(this.window, {
         defaultPath: path.join(settings.lastDirectory, suggestedName),
-        filters: [
-          {
-            name: 'Scratch 3 Project',
-            extensions: ['sb3'],
-          }
-        ]
+        filters
       });
       if (result.canceled) {
         return null;
@@ -517,6 +554,18 @@ class EditorWindow extends ProjectRunningWindow {
 
     this.ipc.handle('open-packager', () => {
       PackagerWindow.forEditor(this);
+    });
+
+    this.ipc.handle('open-ai-chat', () => {
+      if (this.restrictedProjectMode && this.restrictedProjectMode.active) {
+        throw new Error('受限模式下 AI 助手不可用。');
+      }
+      const AIChatWindow = require('./ai-chat');
+      AIChatWindow.forEditor(this);
+    });
+
+    this.ipc.handle('set-restricted-project-mode', (event, mode) => {
+      this.restrictedProjectMode = mode && mode.active ? mode : null;
     });
 
     this.ipc.handle('open-new-window', () => {

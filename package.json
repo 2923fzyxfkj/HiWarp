@@ -1,7 +1,7 @@
 {
   "name": "turbowarp-desktop",
   "description": "Scratch mod with a compiler, dark mode, a bunch of addons, and more.",
-  "version": "1.16.0",
+  "version": "1.2.2-alpha.1",
   "license": "GPL-3.0",
   "author": {
     "email": "contact@turbowarp.org",
@@ -14,9 +14,11 @@
     "webpack:watch": "webpack --watch",
     "webpack:prod": "cross-env NODE_ENV=production webpack",
     "electron:start": "electron src-main/entrypoint.js",
-    "electron:package:dir": "electron-builder --dir"
+    "electron:package:dir": "electron-builder --dir",
+    "electron:package:zip": "node scripts/package-win-unpacked-zip.mjs"
   },
   "dependencies": {
+    "7zip-bin": "^5.2.0",
     "semver": "^7.7.3"
   },
   "devDependencies": {
@@ -61,7 +63,7 @@
   "main": "./src-main/entrypoint.js",
   "build": {
     "appId": "org.turbowarp.desktop",
-    "productName": "TurboWarp",
+    "productName": "HiWarp",
     "files": [
       "node_modules/**/*",
       "src-main/**/*",
@@ -82,7 +84,7 @@
       }
     ],
     "win": {
-      "artifactName": "${productName} Portable ${version} ${arch}.${ext}",
+      "artifactName": "${productName} ${version} Portable ${arch}.${ext}",
       "icon": "build/icon.ico",
       "target": [
         {
@@ -113,7 +115,7 @@
       ]
     },
     "nsis": {
-      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
+      "artifactName": "${productName} ${version} Setup ${arch}.${ext}",
       "oneClick": false,
       "deleteAppDataOnUninstall": false,
       "allowToChangeInstallationDirectory": true
@@ -193,6 +195,13 @@
       "license": null
     },
     "fileAssociations": [
+      {
+        "ext": "hwp",
+        "name": "HiWarp Project",
+        "description": "HiWarp Project",
+        "role": "Editor",
+        "mimeType": "application/x.hiwarp-project"
+      },
       {
         "ext": "sb3",
         "name": "Scratch 3 Project",

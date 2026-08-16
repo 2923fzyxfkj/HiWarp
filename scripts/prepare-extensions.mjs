@@ -37,6 +37,28 @@ const exportFile = async (relativePath, file) => {
 
 const promises = Object.entries(build.files).map(([relativePath, file]) => exportFile(relativePath, file));
 Promise.all(promises)
+  .then(async () => {
+    const hiwarpExtensionsDirectory = pathUtil.join(
+      import.meta.dirname,
+      '../node_modules/scratch-gui/src/lib/libraries/extensions/hidream/'
+    );
+    const hiwarpExtensions = [
+      'hidream_puw.js',
+      'image-processing.js',
+      'liquid-glass-render-v4.js',
+      'cyberexplorer-toolbox-mini.js',
+      'netease-music.js',
+      'file-plus.js'
+    ];
+    await Promise.all(hiwarpExtensions.map(async fileName => {
+      const sourcePath = pathUtil.join(hiwarpExtensionsDirectory, fileName);
+      const outputPath = pathUtil.join(outputDirectory, fileName);
+      const contents = await fsPromises.readFile(sourcePath);
+      await fsPromises.writeFile(outputPath, contents);
+      await fsPromises.writeFile(`${outputPath}.br`, await brotliCompress(contents));
+    }));
+    console.log('Copied HiWarp bundled extensions');
+  })
   .then(() => {
     console.log(`Exported to ${outputDirectory}`);
   })

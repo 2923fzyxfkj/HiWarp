@@ -84,6 +84,14 @@ module.exports = [
                         force: true
                     },
                     {
+                        from: 'node_modules/scratch-gui/static/extensions',
+                        to: 'static/extensions'
+                    },
+                    {
+                        from: 'node_modules/scratch-gui/static/penguinmod',
+                        to: 'penguinmod'
+                    },
+                    {
                         context: 'src-renderer-webpack/editor/gui/',
                         from: '*.html'
                     }

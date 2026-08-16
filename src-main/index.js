@@ -1,5 +1,24 @@
 const {app, crashReporter} = require('electron');
+const path = require('path');
+const {
+  APP_NAME,
+  APP_ID,
+  APP_USER_DATA_NAME
+} = require('./brand');
+
+// Set HiWarp's identity before modules read app paths or Electron creates the
+// single-instance lock. Otherwise installed TurboWarp builds can receive HiWarp
+// launch requests because both apps still look like "turbowarp-desktop".
+app.setName(APP_NAME);
+if (process.platform === 'win32') {
+  app.setAppUserModelId(APP_ID);
+}
+app.setPath('userData', path.join(app.getPath('appData'), APP_USER_DATA_NAME));
+
 const settings = require('./settings');
+const logging = require('./logging');
+
+logging.initialize();
 
 // Enable crash reporting as early as possible to detect as many crashes as possible.
 if (settings.crashDumps === 'local') {
@@ -14,11 +33,10 @@ if (!process.mas && !app.requestSingleInstanceLock()) {
   app.exit();
 }
 
-const path = require('path');
 const AbstractWindow = require('./windows/abstract');
 const EditorWindow = require('./windows/editor');
 const {checkForUpdates} = require('./update-checker');
-const {tranlateOrNull} = require('./l10n');
+const {translateOrNull} = require('./l10n');
 const migrate = require('./migrate');
 require('./protocols');
 require('./context-menu');
@@ -140,7 +158,7 @@ app.on('session-created', (session) => {
 
     // Ensure that the type selector shows proper names on Windows instead of things like "SPRITE3 File"
     const extension = path.extname(item.getFilename()).replace(/^\./, '').toLowerCase();
-    const translated = tranlateOrNull(`files.${extension}`);
+    const translated = translateOrNull(`files.${extension}`);
     if (translated !== null) {
       options.filters = [
         {

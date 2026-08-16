@@ -19,6 +19,7 @@ const isFirstLaunch = (
 
 const desktopVersion = packageJSON.version;
 const electronVersion = process.versions.electron;
+const SKIP_VERSION_DOWNGRADE_DIALOG = true;
 
 const writeCurrentVersion = async () => {
   settings.dataVersion = MigrateWindow.LATEST_VERSION;
@@ -125,6 +126,11 @@ const migrate = async () => {
     semverLt(desktopVersion, settings.desktopVersion) ||
     semverLt(electronVersion, settings.electronVersion)
   ) {
+    if (SKIP_VERSION_DOWNGRADE_DIALOG) {
+      await writeCurrentVersion();
+      return true;
+    }
+
     // Something was downgraded. This is not something we officially support.
     const changes = [];
     if (settings.dataVersion !== MigrateWindow.LATEST_VERSION) {

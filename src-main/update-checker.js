@@ -3,7 +3,6 @@ const UpdateWindow = require('./windows/update');
 const packageJSON = require('../package.json');
 const privilegedFetch = require('./fetch');
 
-const currentVersion = packageJSON.version;
 const URL = 'https://desktop.turbowarp.org/version.json';
 
 /**
@@ -12,12 +11,8 @@ const URL = 'https://desktop.turbowarp.org/version.json';
  * @returns {boolean}
  */
 const isUpdateCheckerAllowed = () => {
-  if (process.env.TW_DISABLE_UPDATE_CHECKER) {
-    return false;
-  }
-
-  // Must be enabled in package.json
-  return !!packageJSON.tw_update;
+  // HiWarp alpha builds do not show version/update checker dialogs.
+  return false;
 };
 
 const checkForUpdates = async () => {
@@ -32,6 +27,7 @@ const checkForUpdates = async () => {
 
   // Imported lazily as it takes about 10ms to import
   const semverLt = require('semver/functions/lt');
+  const currentVersion = packageJSON.version;
 
   // Security updates can not be ignored.
   if (semverLt(currentVersion, oldestSafe)) {

@@ -184,6 +184,13 @@ class Settings {
   set richPresence (richPresence) {
     this.data.richPresence = richPresence;
   }
+
+  get aiConfig () {
+    return this.data.aiConfig || {};
+  }
+  set aiConfig (aiConfig) {
+    this.data.aiConfig = aiConfig;
+  }
 }
 
 module.exports = new Settings();

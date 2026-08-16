@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './web-preload-shim.js';
 import GUI from './gui.jsx';
 
 import './media-device-chooser-impl.js';

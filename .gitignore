@@ -10,6 +10,8 @@ dist-renderer-webpack
 dist-library-files
 dist-extensions
 src-renderer/packager/standalone.html
+dist-web
+
 
 # Debian release scripts create files that shouldn't be committed
 deb
@@ -20,3 +22,7 @@ development.provisionprofile
 
 # Apple App Store Connect API key
 *.p8
+
+# Output
+webpack-out.txt
+SpeedScript

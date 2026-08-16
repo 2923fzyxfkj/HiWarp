@@ -41,6 +41,10 @@ const FILE_SCHEMES = {
     root: path.resolve(__dirname, '../src-renderer/about'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
   },
+  'tw-feedback': {
+    root: path.resolve(__dirname, '../src-renderer/feedback'),
+    csp: "default-src 'none'; style-src 'unsafe-inline'"
+  },
   'tw-packager': {
     root: path.resolve(__dirname, '../src-renderer/packager'),
     standard: true,
@@ -77,6 +81,10 @@ const FILE_SCHEMES = {
   'tw-file-access': {
     root: path.resolve(__dirname, '../src-renderer/file-access'),
     csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
+  },
+  'tw-ai-chat': {
+    root: path.resolve(__dirname, '../src-renderer/ai-chat'),
+    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src *"
   }
 };
 
@@ -246,11 +254,13 @@ const createModernProtocolHandler = (metadata) => {
         // Reading it all into memory is not ideal, but we've had so many problems with streaming
         // files from the asar that I can settle with this.
         const brotliResponse = await net.fetch(nodeURL.pathToFileURL(`${resolved}.br`));
-        const brotliData = await brotliResponse.arrayBuffer();
-        const decompressed = await brotliDecompress(brotliData);
-        return new Response(decompressed, {
-          headers
-        });
+        if (brotliResponse.status === 200) {
+          const brotliData = await brotliResponse.arrayBuffer();
+          const decompressed = await brotliDecompress(brotliData);
+          return new Response(decompressed, {
+            headers
+          });
+        }
       }
 
       const response = await net.fetch(nodeURL.pathToFileURL(resolved));
@@ -311,13 +321,17 @@ const createLegacyBrotliProtocolHandler = (metadata) => {
         return;
       }
 
-      // Reading it all into memory is not ideal, but we've had so many problems with streaming
-      // files from the asar that I can settle with this.
-      const brotliData = await fsPromises.readFile(`${resolved}.br`);
-      const decompressed = await brotliDecompress(brotliData);
+      // Prefer compressed files, but allow HiWarp local extensions to be shipped uncompressed.
+      let data;
+      try {
+        const brotliData = await fsPromises.readFile(`${resolved}.br`);
+        data = await brotliDecompress(brotliData);
+      } catch (error) {
+        data = await fsPromises.readFile(resolved);
+      }
 
       callback({
-        data: decompressed,
+        data,
         headers: {
           ...baseHeaders,
           'content-type': mimeType
