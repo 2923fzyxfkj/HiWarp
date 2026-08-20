@@ -4,6 +4,7 @@ const {exec, execFile} = require('child_process');
 const {app, safeStorage} = require('electron');
 const settings = require('./settings');
 const {logger} = require('./logging');
+const deepseekFree = require('./deepseek-free');
 
 const log = logger('ai-service');
 
@@ -25,6 +26,8 @@ const DEFAULT_CONFIG = {
   apiUrl: '',
   model: '',
   contextMode: 'target',
+  freeDeepSeek: false,
+  freeDeepSeekPython: '',
   webSearch: {
     urlTemplate: 'https://cn.bing.com/search?q={ask}',
     proxyMode: 'system',
@@ -125,6 +128,9 @@ class AIService {
     ipc.handle('ai:upload-context', (event, selection) => this.uploadContext(selection));
     ipc.handle('ai:send-message', (event, text, selection) => this.sendMessage(text, selection));
     ipc.handle('ai:recognize-speech', () => this.recognizeSpeech());
+    ipc.handle('ai:free-check-login', () => deepseekFree.checkLogin(this.config.freeDeepSeekPython));
+    ipc.handle('ai:free-login', () => deepseekFree.login(this.config.freeDeepSeekPython));
+    ipc.handle('ai:free-close', () => deepseekFree.close(this.config.freeDeepSeekPython));
     if (isEditor) {
       ipc.on('ai:editor-response', (event, response) => {
         this.resolveEditorRequest(response && response.id, response && response.result, response && response.error);
@@ -364,6 +370,8 @@ $script:recognizedText
     const apiUrl = typeof input.apiUrl === 'string' ? input.apiUrl.trim().replace(/\/+$/, '') : this.config.apiUrl;
     const model = typeof input.model === 'string' ? input.model.trim() : this.config.model;
     const contextMode = ['target', 'project', 'custom'].includes(input.contextMode) ? input.contextMode : this.config.contextMode;
+    const freeDeepSeek = typeof input.freeDeepSeek === 'boolean' ? input.freeDeepSeek : this.config.freeDeepSeek;
+    const freeDeepSeekPython = typeof input.freeDeepSeekPython === 'string' ? input.freeDeepSeekPython.trim() : this.config.freeDeepSeekPython;
     const inputWebSearch = input.webSearch && typeof input.webSearch === 'object' ? input.webSearch : {};
     const webSearch = {
       urlTemplate: typeof inputWebSearch.urlTemplate === 'string' ?
@@ -389,7 +397,7 @@ $script:recognizedText
         this.config.permissions[permission];
     }
 
-    this.config = {apiUrl, model, contextMode, webSearch, permissions};
+    this.config = {apiUrl, model, contextMode, freeDeepSeek, freeDeepSeekPython, webSearch, permissions};
     settings.aiConfig = this.config;
     await settings.save();
 
@@ -406,6 +414,8 @@ $script:recognizedText
       hasApiUrl: Boolean(apiUrl),
       model,
       contextMode,
+      freeDeepSeek,
+      hasFreeDeepSeekPython: Boolean(freeDeepSeekPython),
       webSearch: {
         hasUrlTemplate: Boolean(webSearch.urlTemplate),
         proxyMode: webSearch.proxyMode,
@@ -953,6 +963,82 @@ $script:recognizedText
     this.broadcast();
   }
 
+  buildFreeDeepSeekPrompt (messages) {
+    const parts = [];
+    for (const message of messages) {
+      if (!message || typeof message.content !== 'string') continue;
+      if (message.role === 'system') {
+        parts.push(`【系统指令】\n${message.content}`);
+      } else if (message.role === 'assistant') {
+        parts.push(`【助手】\n${message.content}`);
+      } else {
+        parts.push(`【用户】\n${message.content}`);
+      }
+    }
+    return parts.join('\n\n');
+  }
+
+  /**
+   * 统一的对话请求入口。
+   * 免费 DeepSeek 模式: 调用本地 Python 网页版接口（整段返回, 非流式）。
+   * 普通模式: OpenAI 兼容流式接口。
+   * @param {object[]} messages
+   * @param {object} assistant 用于接收增量内容（普通模式流式时逐段更新）
+   * @param {{replaceOnFirstToken?: boolean}} options
+   * @returns {Promise<number>} 追加/替换的内容长度
+   */
+  async requestChatCompletion (messages, assistant, options = {}) {
+    if (this.config.freeDeepSeek) {
+      const prompt = this.buildFreeDeepSeekPrompt(messages);
+      const result = await deepseekFree.input(this.config.freeDeepSeekPython, {message: prompt});
+      if (!result.ok) {
+        throw new Error(this.translateFreeDeepSeekError(result.error));
+      }
+      const text = result.result && result.result.message;
+      if (typeof text !== 'string' || !text.trim()) {
+        const replyError = result.result && result.result.error;
+        throw new Error(this.translateFreeDeepSeekError(replyError || 'DeepSeek 网页版没有返回内容，请稍后重试。'));
+      }
+      if (options.replaceOnFirstToken) assistant.content = '';
+      assistant.content += text;
+      this.broadcast();
+      return text.length;
+    }
+
+    const response = await fetch(`${this.config.apiUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${this.readKey()}`},
+      body: JSON.stringify({
+        model: this.config.model || 'deepseek-chat',
+        stream: true,
+        messages
+      })
+    });
+    if (!response.ok || !response.body) {
+      let body = await response.text().catch(() => '');
+      body = body.slice(0, MAX_ERROR_BODY_CHARS);
+      throw new Error(`AI 接口错误 (${response.status}): ${body}`);
+    }
+    return this.readChatCompletionResponse(response, assistant, options);
+  }
+
+  translateFreeDeepSeekError (error) {
+    const text = String(error || '');
+    if (/unlogined/i.test(text)) {
+      return 'DeepSeek 登录态已过期，请先在 AI 设置中点击“登录 DeepSeek”重新登录。';
+    }
+    if (/login.?timeout/i.test(text)) {
+      return 'DeepSeek 登录超时，请重新点击“登录 DeepSeek”并在浏览器中完成登录。';
+    }
+    if (/no.?internet|网络|internetexception/i.test(text)) {
+      return `DeepSeek 网页版无法访问网络: ${text}`;
+    }
+    if (/proxy/i.test(text)) {
+      return `DeepSeek 网页版代理错误: ${text}`;
+    }
+    return text;
+  }
+
   async readChatCompletionResponse (response, assistant, options = {}) {
     let appendedLength = 0;
     let replacedOnFirstToken = false;
@@ -1077,28 +1163,7 @@ $script:recognizedText
       operationCount: operations.length,
       error: operationError.message
     });
-    const revisionResponse = await fetch(`${this.config.apiUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${this.readKey()}`},
-      body: JSON.stringify({
-        model: this.config.model || 'deepseek-chat',
-        stream: true,
-        messages: revisionMessages
-      })
-    });
-
-    if (!revisionResponse.ok || !revisionResponse.body) {
-      let body = await revisionResponse.text().catch(() => '');
-      log.warn('AI operation revision request failed', {
-        status: revisionResponse.status,
-        bodyLength: body.length,
-        durationMs: Date.now() - startedAt
-      });
-      body = body.slice(0, MAX_ERROR_BODY_CHARS);
-      throw new Error(`AI 操作修正请求失败 (${revisionResponse.status}): ${body}`);
-    }
-
-    const revisionContentLength = await this.readChatCompletionResponse(revisionResponse, assistant, {
+    const revisionContentLength = await this.requestChatCompletion(revisionMessages, assistant, {
       replaceOnFirstToken: true
     });
     if (revisionContentLength === 0) {
@@ -1139,7 +1204,21 @@ $script:recognizedText
 
   async sendMessage (text, selection) {
     if (this.isStreaming) throw new Error('请等待当前回复完成');
-    if (!this.config.apiUrl || !this.readKey()) throw new Error('请先在 AI 设置中填写 API 地址和 API Key');
+    if (!this.config.freeDeepSeek && (!this.config.apiUrl || !this.readKey())) {
+      throw new Error('请先在 AI 设置中填写 API 地址和 API Key，或开启“免费使用 DeepSeek”。');
+    }
+    if (this.config.freeDeepSeek) {
+      // 第一次使用（本地无登录态）时自动打开浏览器登录, 登录完成后再继续发送
+      const sessionCheck = await deepseekFree.checkLogin(this.config.freeDeepSeekPython);
+      if (sessionCheck.ok && !sessionCheck.hasSession) {
+        log.info('Free DeepSeek first use: opening login browser');
+        const loginResult = await deepseekFree.login(this.config.freeDeepSeekPython);
+        if (!loginResult.ok) {
+          throw new Error(this.translateFreeDeepSeekError(loginResult.error || 'DeepSeek 登录未完成，请重新点击“登录 DeepSeek”。'));
+        }
+        this.broadcast();
+      }
+    }
     if (!this.contextSnapshot) {
       if (this.config.contextMode === 'custom') {
         throw new Error('自定义上下文请先选择脚本并点击“上传上下文”');
@@ -1174,28 +1253,7 @@ $script:recognizedText
     });
 
     try {
-      const response = await fetch(`${this.config.apiUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json', Authorization: `Bearer ${this.readKey()}`},
-        body: JSON.stringify({
-          model: this.config.model || 'deepseek-chat',
-          stream: true,
-          messages: requestMessages
-        })
-      });
-
-      if (!response.ok || !response.body) {
-        let body = await response.text().catch(() => '');
-        log.warn('AI chat request failed', {
-          status: response.status,
-          bodyLength: body.length,
-          durationMs: Date.now() - startedAt
-        });
-        body = body.slice(0, MAX_ERROR_BODY_CHARS);
-        throw new Error(`AI 接口错误 (${response.status}): ${body}`);
-      }
-
-      await this.readChatCompletionResponse(response, assistant);
+      await this.requestChatCompletion(requestMessages, assistant);
 
       const webSearchQueries = this.extractWebSearchRequests(assistant.content);
       if (webSearchQueries.length) {
@@ -1229,28 +1287,7 @@ $script:recognizedText
           queryCount: webSearchQueries.length,
           resultLength: searchResultText.length
         });
-        const searchFollowUpResponse = await fetch(`${this.config.apiUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', Authorization: `Bearer ${this.readKey()}`},
-          body: JSON.stringify({
-            model: this.config.model || 'deepseek-chat',
-            stream: true,
-            messages: searchFollowUpMessages
-          })
-        });
-
-        if (!searchFollowUpResponse.ok || !searchFollowUpResponse.body) {
-          let body = await searchFollowUpResponse.text().catch(() => '');
-          log.warn('AI web search follow-up request failed', {
-            status: searchFollowUpResponse.status,
-            bodyLength: body.length,
-            durationMs: Date.now() - startedAt
-          });
-          body = body.slice(0, MAX_ERROR_BODY_CHARS);
-          throw new Error(`AI 联网搜索后续请求失败 (${searchFollowUpResponse.status}): ${body}`);
-        }
-
-        const searchFollowUpContentLength = await this.readChatCompletionResponse(searchFollowUpResponse, assistant, {
+        const searchFollowUpContentLength = await this.requestChatCompletion(searchFollowUpMessages, assistant, {
           replaceOnFirstToken: true
         });
         if (searchFollowUpContentLength === 0) {
@@ -1317,27 +1354,7 @@ $script:recognizedText
           requestCount: contextRequests.length,
           detailLength: detailText.length
         });
-        const followUpResponse = await fetch(`${this.config.apiUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', Authorization: `Bearer ${this.readKey()}`},
-          body: JSON.stringify({
-            model: this.config.model || 'deepseek-chat',
-            stream: true,
-            messages: followUpMessages
-          })
-        });
-
-        if (!followUpResponse.ok || !followUpResponse.body) {
-          let body = await followUpResponse.text().catch(() => '');
-          log.warn('AI follow-up request failed', {
-            status: followUpResponse.status,
-            bodyLength: body.length,
-            durationMs: Date.now() - startedAt
-          });
-          body = body.slice(0, MAX_ERROR_BODY_CHARS);
-          throw new Error(`AI 二级上下文请求失败 (${followUpResponse.status}): ${body}`);
-        }
-        const followUpContentLength = await this.readChatCompletionResponse(followUpResponse, assistant, {
+        const followUpContentLength = await this.requestChatCompletion(followUpMessages, assistant, {
           replaceOnFirstToken: true
         });
         if (followUpContentLength === 0) {

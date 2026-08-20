@@ -76,7 +76,10 @@ if (typeof globalThis !== 'undefined' && !globalThis.EditorPreload) {
       sendMessage: asyncUnsupported('AI assistant'),
       continueLastSession: asyncUnsupported('AI session restore'),
       startNewSession: async () => aiState,
-      recognizeSpeech: asyncUnsupported('local speech recognition')
+      recognizeSpeech: asyncUnsupported('local speech recognition'),
+      freeCheckLogin: asyncUnsupported('free DeepSeek login'),
+      freeLogin: asyncUnsupported('free DeepSeek login'),
+      freeClose: asyncUnsupported('free DeepSeek login')
     }
   };
 }

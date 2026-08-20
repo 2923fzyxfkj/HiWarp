@@ -1022,7 +1022,9 @@ class AIChatSidebar extends React.Component {
       isListening: false,
       speakingMessageId: null,
       customSelection: {targetIds: [], scriptIds: {}},
-      tabPosition: {right: 0, topRatio: 0.42}
+      tabPosition: {right: 0, topRatio: 0.42},
+      freeStatusText: '',
+      freeLoginWaiting: false
     };
     this.tabDrag = null;
     this.speechUtterance = null;
@@ -1046,7 +1048,12 @@ class AIChatSidebar extends React.Component {
         EditorPreload.ai.respond({id: request.id, error: error.message});
       }
     });
-    EditorPreload.ai.getState().then(service => this.setState({service}));
+    EditorPreload.ai.getState().then(service => {
+      this.setState({service});
+      if (service && service.config && service.config.freeDeepSeek) {
+        this.checkFreeLogin();
+      }
+    });
     this.publishCatalog();
   }
 
@@ -1060,6 +1067,45 @@ class AIChatSidebar extends React.Component {
 
   publishCatalog () {
     EditorPreload.ai.setContextCatalog(makeCatalog(this.props.vm));
+  }
+
+  async checkFreeLogin () {
+    this.setState({freeStatusText: '正在检查 DeepSeek 登录状态...'});
+    try {
+      const result = await EditorPreload.ai.freeCheckLogin();
+      this.setState({
+        freeStatusText: result && result.ok
+          ? (result.hasSession ? '已登录 DeepSeek 网页版。' : '未登录，点击“登录 DeepSeek”在浏览器中完成登录。')
+          : `检查失败: ${(result && result.error) || '未知错误'}`
+      });
+    } catch (error) {
+      this.setState({freeStatusText: `检查失败: ${error.message}`});
+    }
+  }
+
+  async freeLogin () {
+    this.setState({freeLoginWaiting: true, freeStatusText: '正在打开浏览器，请在弹出的 DeepSeek 页面中完成登录（手机号/邮箱 + 验证码）...'});
+    try {
+      const result = await EditorPreload.ai.freeLogin();
+      this.setState({
+        freeStatusText: result && result.ok ? '登录完成，可以直接使用了。' : `登录未完成: ${(result && result.error) || '未知错误'}`
+      });
+    } catch (error) {
+      this.setState({freeStatusText: `登录失败: ${error.message}`});
+    } finally {
+      this.setState({freeLoginWaiting: false});
+    }
+  }
+
+  async freeClose () {
+    try {
+      const result = await EditorPreload.ai.freeClose();
+      this.setState({
+        freeStatusText: result && result.ok ? '已关闭 DeepSeek 浏览器进程。' : `关闭失败: ${(result && result.error) || '未知错误'}`
+      });
+    } catch (error) {
+      this.setState({freeStatusText: `关闭失败: ${error.message}`});
+    }
   }
 
   async saveConfig () {
@@ -1282,6 +1328,16 @@ class AIChatSidebar extends React.Component {
         </header>
         <details style={settingsStyle}>
           <summary style={summaryStyle}>接口、权限与上下文设置</summary>
+          <label style={fieldLabelStyle}><input type="checkbox" checked={Boolean(config.freeDeepSeek)} onChange={event => this.updateConfig('freeDeepSeek', event.currentTarget.checked)} />免费使用 DeepSeek（无需 API Key）</label>
+          {config.freeDeepSeek && <React.Fragment>
+            <label style={fieldLabelStyle}>Python 解释器（留空用系统 python）<input value={config.freeDeepSeekPython || ''} placeholder="例如 C:\Users\...\.venv\Scripts\python.exe" onChange={event => this.updateConfig('freeDeepSeekPython', event.currentTarget.value)} style={inputStyle} /></label>
+            <div style={actionRowStyle}>
+              <button style={subtleButtonStyle} onClick={() => this.checkFreeLogin()}>检查登录</button>
+              <button style={warningButtonStyle} disabled={this.state.freeLoginWaiting} onClick={() => this.freeLogin()}>{this.state.freeLoginWaiting ? '等待登录...' : '登录 DeepSeek'}</button>
+              <button style={subtleButtonStyle} onClick={() => this.freeClose()}>关闭浏览器</button>
+            </div>
+            <p style={{color: '#9cb8c4', fontSize: '0.78rem', margin: '0.55rem 0 0'}}>{this.state.freeStatusText || '首次使用需登录 DeepSeek 网页账号，登录态会保存在本地。'}</p>
+          </React.Fragment>}
           <label style={fieldLabelStyle}>API 地址<input value={config.apiUrl} onChange={event => this.updateConfig('apiUrl', event.currentTarget.value)} style={inputStyle} /></label>
           <label style={fieldLabelStyle}>API Key<input type="password" value={this.state.apiKey} placeholder={config.hasApiKey ? '已安全保存；留空则不修改' : '请输入 API Key'} onChange={event => this.setState({apiKey: event.currentTarget.value})} style={inputStyle} /></label>
           <label style={fieldLabelStyle}>模型<input value={config.model} onChange={event => this.updateConfig('model', event.currentTarget.value)} style={inputStyle} /></label>

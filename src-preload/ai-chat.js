@@ -47,6 +47,9 @@ contextBridge.exposeInMainWorld('AIChatPreload', {
   uploadContext: selection => ipcRenderer.invoke('ai:upload-context', selection),
   sendMessage: (text, selection) => ipcRenderer.invoke('ai:send-message', text, selection),
   recognizeSpeech: () => ipcRenderer.invoke('ai:recognize-speech'),
+  freeCheckLogin: () => ipcRenderer.invoke('ai:free-check-login'),
+  freeLogin: () => ipcRenderer.invoke('ai:free-login'),
+  freeClose: () => ipcRenderer.invoke('ai:free-close'),
   onState: callback => {
     const listener = (event, state) => callback(state);
     ipcRenderer.on('ai:state', listener);
