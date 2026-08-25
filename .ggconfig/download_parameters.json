@@ -1,0 +1,110 @@
+{
+  "windows": {
+    "1": {
+      "action": {
+        "download": "2923fzyxfkj/HiWarp"
+      },
+      "description": "下载 HiWarp 源码仓库到 HiWarp 子目录"
+    },
+    "2": {
+      "action": {
+        "run": ["powershell", "-NoProfile", "-Command", "Set-Location HiWarp; npm.cmd ci"]
+      },
+      "description": "在源码目录安装构建依赖"
+    },
+    "3": {
+      "action": {
+        "run": ["powershell", "-NoProfile", "-Command", "Set-Location HiWarp; npm.cmd run fetch"]
+      },
+      "description": "下载扩展库、打包器与内置扩展资源"
+    },
+    "4": {
+      "action": {
+        "run": ["powershell", "-NoProfile", "-Command", "Set-Location HiWarp; npm.cmd run webpack:prod"]
+      },
+      "description": "编译应用（production 构建）"
+    },
+    "5": {
+      "action": {
+        "run": ["powershell", "-NoProfile", "-Command", "Set-Location HiWarp; npm.cmd exec electron-builder --win nsis --x64 --config electron-builder.hiwarp-alpha.cjs --publish never"]
+      },
+      "description": "构建 Setup 安装包（NSIS，含开始菜单、文件关联、卸载注册功能）"
+    },
+    "6": {
+      "action": {
+        "run": ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "Set-Location HiWarp; $s = Get-ChildItem 'dist' -Filter 'HiWarp*Setup*.exe' | Select-Object -First 1; if (-not $s) { throw '未找到 Setup 安装包' }; Write-Host ('正在静默安装: ' + $s.Name); Start-Process -FilePath $s.FullName -ArgumentList '/S' -Wait; Write-Host 'Setup 安装完成'"]
+      },
+      "description": "静默运行 Setup 安装包（安装应用文件、开始菜单快捷方式、.sb3/.hwp 文件关联）"
+    },
+    "7": {
+      "action": {
+        "run": ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "HiWarp\\install.ps1"]
+      },
+      "description": "配置用户环境变量（把安装目录加入 PATH）并补齐开始菜单快捷方式"
+    }
+  },
+  "linux": {
+    "1": {
+      "action": {
+        "download": "2923fzyxfkj/HiWarp"
+      },
+      "description": "下载 HiWarp 源码仓库到 HiWarp 子目录"
+    },
+    "2": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm ci"]
+      },
+      "description": "在源码目录安装构建依赖"
+    },
+    "3": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm run fetch"]
+      },
+      "description": "下载扩展库、打包器与内置扩展资源"
+    },
+    "4": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm run webpack:prod"]
+      },
+      "description": "编译应用（production 构建）"
+    },
+    "5": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm exec electron-builder --linux deb AppImage tar.gz --x64 --config electron-builder.hiwarp-linux-alpha.cjs --publish never"]
+      },
+      "description": "构建 deb / AppImage / tar.gz 发布包"
+    }
+  },
+  "darwin": {
+    "1": {
+      "action": {
+        "download": "2923fzyxfkj/HiWarp"
+      },
+      "description": "下载 HiWarp 源码仓库到 HiWarp 子目录"
+    },
+    "2": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm ci"]
+      },
+      "description": "在源码目录安装构建依赖"
+    },
+    "3": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm run fetch"]
+      },
+      "description": "下载扩展库、打包器与内置扩展资源"
+    },
+    "4": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm run webpack:prod"]
+      },
+      "description": "编译应用（production 构建）"
+    },
+    "5": {
+      "action": {
+        "run": ["bash", "-c", "cd HiWarp && npm exec electron-builder --mac dmg --universal --config electron-builder.hiwarp-macos-alpha.cjs --publish never"]
+      },
+      "description": "构建 macOS dmg 发布包"
+    }
+  }
+}

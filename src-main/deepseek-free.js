@@ -5,14 +5,15 @@
  * 依赖: pip install deepseek-notoken-api playwright（参考
  * C:\Users\Canary\Library\Code\GithubProject\deepseek-notoken-api）
  */
-const {execFile} = require('child_process');
+const {execFile, spawn} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const {logger} = require('./logging');
 
 const log = logger('deepseek-free');
 
-// 紧凑的 Python 桥接脚本: 通过 -c 传入, 用 argv 传 action 和 payload。
+// 紧凑的 Python 桥接脚本: 通过 -c 传入, action 走 argv, payload 走 stdin。
+// 避免超长消息（完整上下文 + 巨大 XML）超出 Windows 命令行长度限制(ENAMETOOLONG)。
 // 永远以一行 JSON 输出到 stdout, 绝不抛异常。
 const PYTHON_SCRIPT = [
   'import json, sys',
@@ -22,7 +23,10 @@ const PYTHON_SCRIPT = [
   '    print(json.dumps({"ok": False, "error": "PythonException:未安装 deepseek-notoken-api: %s" % e}))',
   '    sys.exit(0)',
   'action = sys.argv[1]',
-  'payload = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}',
+  'try:',
+  '    payload = json.loads(sys.stdin.read()) if not sys.stdin.isatty() else {}',
+  'except Exception:',
+  '    payload = {}',
   'try:',
   '    if action == "has_session":',
   '        print(json.dumps({"ok": True, "hasSession": bool(d.has_session())}))',
@@ -79,15 +83,41 @@ const resolvePython = pythonPath => {
 
 const run = (pythonPath, action, payload) => new Promise(resolve => {
   const command = resolvePython(pythonPath);
-  const args = ['-c', PYTHON_SCRIPT, action, JSON.stringify(payload || {})];
+  const args = ['-c', PYTHON_SCRIPT, action];
   log.info('DeepSeek free Python call started', {action, command});
-  execFile(command, args, {
-    timeout: getTimeout(action),
-    maxBuffer: 16 * 1024 * 1024,
+  // 用 spawn + 手动写 stdin, 避免 execFile 的 input 在 Windows 上不可靠,
+  // 也避免超长 payload 超出 Windows 命令行长度限制 (ENAMETOOLONG)。
+  const child = spawn(command, args, {
     windowsHide: true,
     env: {...process.env, PYTHONIOENCODING: 'utf-8'}
-  }, (error, stdout, stderr) => {
-    const stdoutText = String(stdout || '');
+  });
+  let stdoutText = '';
+  let stderrText = '';
+  let settled = false;
+  const timer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    child.kill();
+    log.warn('DeepSeek free Python call timed out', {action});
+    resolve({ok: false, error: `PythonException:${action} 超时（${getTimeout(action) / 1000} 秒）`});
+  }, getTimeout(action));
+  child.stdout.on('data', chunk => {
+    stdoutText += chunk;
+  });
+  child.stderr.on('data', chunk => {
+    stderrText += chunk;
+  });
+  child.on('error', error => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    log.warn('DeepSeek free Python call failed', {action, error: error.message});
+    resolve({ok: false, error: `PythonException:${error.message}`});
+  });
+  child.on('close', () => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
     const lines = stdoutText.trim().split(/\r?\n/).filter(Boolean);
     let parsed = null;
     for (let i = lines.length - 1; i >= 0; i--) {
@@ -98,13 +128,9 @@ const run = (pythonPath, action, payload) => new Promise(resolve => {
         // 跳过非 JSON 输出行（例如库打印的提示）
       }
     }
-    if (error) {
-      log.warn('DeepSeek free Python call failed', {action, error: error.message});
-    }
     if (!parsed) {
-      const stderrText = String(stderr || '').trim();
-      const detail = stderrText ? `\n${stderrText.slice(0, 2000)}` : '';
-      resolve({ok: false, error: `PythonException:${error ? error.message : '没有输出'}${detail}`});
+      const detail = stderrText.trim() ? `\n${stderrText.trim().slice(0, 2000)}` : '';
+      resolve({ok: false, error: `PythonException:没有输出${detail}`});
       return;
     }
     log.info('DeepSeek free Python call completed', {action, ok: parsed.ok});
@@ -114,6 +140,8 @@ const run = (pythonPath, action, payload) => new Promise(resolve => {
       resolve({ok: false, error: parsed.error || 'UnknownException:未知错误'});
     }
   });
+  child.stdin.write(JSON.stringify(payload || {}));
+  child.stdin.end();
 });
 
 const checkLogin = (pythonPath) => run(pythonPath, 'has_session', {})

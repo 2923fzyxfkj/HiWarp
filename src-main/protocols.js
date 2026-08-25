@@ -167,7 +167,7 @@ const createErrorPageHTML = (request, errorMessage) => `<!DOCTYPE html>
   </head>
   <body bgcolor="white" text="black">
     <h1>Protocol handler error</h1>
-    <p>If you can see this page, <a href="https://github.com/TurboWarp/desktop/issues" target="_blank" rel="noreferrer">please open a GitHub issue</a> or <a href="mailto:contact@turbowarp.org" target="_blank" rel="noreferrer">email us</a> with all the information below.</p>
+    <p>If you can see this page, <a href="https://github.com/2923fzyxfkj/HiWarp/issues" target="_blank" rel="noreferrer">please open a GitHub issue</a> or <a href="mailto:contact@turbowarp.org" target="_blank" rel="noreferrer">email us</a> with all the information below.</p>
     <pre>${escapeXML(errorMessage)}</pre>
     <pre>URL: ${escapeXML(request.url)}</pre>
     <pre>Version ${escapeXML(packageJSON.version)}, Electron ${escapeXML(process.versions.electron)}, Platform ${escapeXML(getPlatform())} ${escapeXML(process.arch)}, Distribution ${escapeXML(getDist())}</pre>

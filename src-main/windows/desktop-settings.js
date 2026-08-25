@@ -117,6 +117,12 @@ class DesktopSettingsWindow extends AbstractWindow {
       shell.showItemInFolder(crashDumps);
     });
 
+    this.ipc.handle('open-about', () => {
+      // Imported lazily to avoid a circular dependency at startup
+      const AboutWindow = require('./about');
+      AboutWindow.show();
+    });
+
     this.loadURL('tw-desktop-settings://./desktop-settings.html');
   }
 

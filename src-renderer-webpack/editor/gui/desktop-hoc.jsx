@@ -65,7 +65,7 @@ const handleClickAbout = () => {
 };
 
 const handleClickSourceCode = () => {
-  window.open('https://github.com/TurboWarp');
+  window.open('https://github.com/2923fzyxfkj/HiWarp');
 };
 
 const securityManager = {

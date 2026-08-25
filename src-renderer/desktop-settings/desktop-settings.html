@@ -10,14 +10,14 @@
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         color: black;
         background-color: white;
-        accent-color: #ff4c4c;
+        accent-color: #4c97ff;
       }
       main {
         padding: 20px;
         box-sizing: border-box;
         width: 100%;
         min-height: 100vh;
-        border: 20px solid hsla(0, 100%, 65%, 1);
+        border: 20px solid #4c97ff;
       }
       .title {
         margin-top: 0;
@@ -355,6 +355,7 @@
       <div class="button-row">
         <button class="open-user-data"></button>
         <button class="open-crash-dumps"></button>
+        <button class="open-about"></button>
       </div>
       <script>
         const openUserData = document.querySelector('.open-user-data');
@@ -368,6 +369,12 @@
           DesktopSettingsPreload.openCrashDumps();
         });
         openCrashDumps.textContent = strings['desktop-settings.open-crash-dumps'];
+
+        const openAbout = document.querySelector('.open-about');
+        openAbout.addEventListener('click', () => {
+          DesktopSettingsPreload.openAbout();
+        });
+        openAbout.textContent = strings['desktop-settings.about'] || '关于';
       </script>
     </main>
   </body>

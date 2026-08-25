@@ -1794,6 +1794,7 @@
         "desktop-settings.notify-stable": "接收稳定更新",
         "desktop-settings.notify-unstable": "接收不稳定更新",
         "desktop-settings.open-user-data": "打开用户数据",
+        "desktop-settings.about": "关于",
         "desktop-settings.rich-presence": "启用 Rich Presence",
         "desktop-settings.rich-presence-unavailable": "Rich Presence 在当前版本中不可用",
         "desktop-settings.spellchecker": "启用拼写检查",

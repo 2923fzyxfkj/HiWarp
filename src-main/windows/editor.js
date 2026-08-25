@@ -173,14 +173,14 @@ const getUnsafePaths = () => {
       app: APP_NAME,
     },
 
-    // TurboWarp Desktop defaults
+    // HiWarp Desktop defaults
     {
       path: path.join(appData, 'turbowarp-desktop'),
-      app: 'TurboWarp Desktop'
+      app: 'HiWarp Desktop'
     },
     {
-      path: path.join(localPrograms, 'TurboWarp'),
-      app: 'TurboWarp Desktop'
+      path: path.join(localPrograms, 'HiWarp'),
+      app: 'HiWarp Desktop'
     },
 
     // Scratch Desktop defaults

@@ -279,6 +279,10 @@
     "string": "Open User Data",
     "developer_comment": "Button in desktop settings to open the user data folder"
   },
+  "desktop-settings.about": {
+    "string": "About",
+    "developer_comment": "Button in desktop settings to open the about window"
+  },
   "desktop-settings.crash-dumps": {
     "string": "Crash dump logging (requires restart)",
     "developer_comment": "Label for a dropdown in desktop settings controlling whether crash dumps are saved. Requires a restart to apply."

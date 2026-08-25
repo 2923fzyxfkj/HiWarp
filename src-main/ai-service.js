@@ -737,6 +737,10 @@ $script:recognizedText
 
   getOperationProtocolPrompt () {
     return [
+      'targetId、rootBlockId 是区分大小写的精确字符串（可能包含标点符号），必须从项目上下文逐字符复制，禁止修改、拼接、推测或凭记忆重写任何字符；写错一个字符操作就会失败。',
+      '用户要求实现某个功能时，必须一次性输出完整、自洽、可运行的脚本集合，核心机制必须包含（例如画板的主循环：清空画布→抬笔→循环检测鼠标按下/松开→落笔/抬笔→角色跟随鼠标移动）。禁止只输出辅助功能（如颜色/粗细快捷键）而遗漏主逻辑，也禁止省略已存在但功能正常的部分。',
+      '删除旧脚本时，deleteScript 的 targetId 与 rootBlockId 必须来自上下文中同一个角色；insertScript/replaceScript 的 targetId 必须是当前真实存在的角色。',
+      '所有 ai-operations 必须放在一个标准 markdown 代码块中：先写 ```ai-operations，紧接着换行写 JSON，最后 ``` 结束；代码块内只允许 JSON，不要放任何其他文字。',
       '如果需要修改项目，优先使用 Blockly XML，避免自定义 JSON 积木链导致连接错误。',
       '推荐格式一：```ai-operations\n{"operations":[{"type":"insertScript","targetId":"角色ID","xml":"<xml><block type=\\"motion_movesteps\\" x=\\"80\\" y=\\"80\\"><value name=\\"STEPS\\"><shadow type=\\"math_number\\"><field name=\\"NUM\\">10</field></shadow></value></block></xml>"}]}\n```',
       '推荐格式二：```ai-operations-xml\n<operations><insertScript targetId="角色ID"><xml><block type="motion_movesteps" x="80" y="80"><value name="STEPS"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block></xml></insertScript></operations>\n```',
@@ -805,8 +809,62 @@ $script:recognizedText
     ].join('\n\n');
   }
 
+  /**
+   * 从文本中提取第一个通过 validator 校验的完整 JSON 值。
+   * 用于恢复被网页版 UI 文字污染（如"复制/下载"）或缺少 ``` 包裹的代码块。
+   * @param {string} text
+   * @param {(parsed: unknown) => boolean} [validator]
+   * @returns {*}
+   */
+  extractJSONFromText (text, validator) {
+    const source = String(text || '');
+    let searchFrom = 0;
+    while (searchFrom < source.length) {
+      const start = source.indexOf('{', searchFrom);
+      if (start === -1) return null;
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      let end = -1;
+      for (let i = start; i < source.length; i++) {
+        const ch = source[i];
+        if (inString) {
+          if (escaped) {
+            escaped = false;
+          } else if (ch === '\\') {
+            escaped = true;
+          } else if (ch === '"') {
+            inString = false;
+          }
+          continue;
+        }
+        if (ch === '"') {
+          inString = true;
+        } else if (ch === '{') {
+          depth += 1;
+        } else if (ch === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            end = i;
+            break;
+          }
+        }
+      }
+      if (end === -1) return null;
+      try {
+        const parsed = JSON.parse(source.slice(start, end + 1));
+        if (!validator || validator(parsed)) return parsed;
+      } catch (error) {
+        // 继续尝试下一个 { 起始点
+      }
+      searchFrom = start + 1;
+    }
+    return null;
+  }
+
   extractOperations (content) {
-    const codeBlocks = Array.from(content.matchAll(/```([\w-]*)\s*\n?([\s\S]*?)```/g));
+    const raw = String(content || '');
+    const codeBlocks = Array.from(raw.matchAll(/```([\w-]*)\s*\n?([\s\S]*?)```/g));
     const xmlCandidates = codeBlocks
       .filter(match => ['ai-operations-xml', 'blockly-xml', 'xml'].includes(match[1].toLowerCase()));
     for (const candidate of xmlCandidates) {
@@ -822,16 +880,28 @@ $script:recognizedText
         const operations = this.extractOperationsFromXML(candidate[2]);
         if (operations.length) return operations;
       }
+      let parsed = null;
       try {
-        const parsed = JSON.parse(candidate[2].trim());
-        if (parsed && Array.isArray(parsed.operations)) return parsed.operations;
-        if (Array.isArray(parsed) && parsed.every(operation => operation && operation.type)) return parsed;
+        parsed = JSON.parse(candidate[2].trim());
       } catch (error) {
-        if (candidate[1].toLowerCase() === 'ai-operations') {
-          log.warn('AI returned invalid operation JSON', error);
-          throw new Error(`AI 返回的操作 JSON 无效: ${error.message}`);
+        parsed = this.extractJSONFromText(candidate[2]);
+        if (parsed) {
+          log.warn('AI operation JSON recovered from noisy code block', {reason: error.message});
         }
       }
+      if (parsed) {
+        if (Array.isArray(parsed.operations)) return parsed.operations;
+        if (Array.isArray(parsed) && parsed.every(operation => operation && operation.type)) return parsed;
+      }
+    }
+    // 兜底: 网页版渲染后 textContent 可能不带 ``` 包裹, 直接从全文提取
+    const fromFullText = this.extractJSONFromText(raw, parsed =>
+      (parsed && Array.isArray(parsed.operations)) ||
+      (Array.isArray(parsed) && parsed.every(operation => operation && operation.type))
+    );
+    if (fromFullText) {
+      log.warn('AI operation JSON recovered from full text without code fences');
+      return Array.isArray(fromFullText.operations) ? fromFullText.operations : fromFullText;
     }
     return [];
   }
@@ -879,59 +949,99 @@ $script:recognizedText
   }
 
   extractWebSearchRequests (content) {
-    const codeBlocks = Array.from(String(content || '').matchAll(/```([\w-]*)\s*\n?([\s\S]*?)```/g));
+    const raw = String(content || '');
+    const codeBlocks = Array.from(raw.matchAll(/```([\w-]*)\s*\n?([\s\S]*?)```/g));
     const candidates = codeBlocks.filter(match => ['websearch', 'web-search'].includes(match[1].toLowerCase()));
     for (const candidate of candidates) {
+      let parsed = null;
       try {
-        const parsed = JSON.parse(candidate[2].trim());
-        if (typeof parsed === 'string') return [parsed];
-        if (Array.isArray(parsed)) return parsed.map(query => String(query || '')).filter(Boolean);
-        if (parsed && typeof parsed.query === 'string') return [parsed.query];
-        if (parsed && Array.isArray(parsed.queries)) {
-          return parsed.queries.map(query => String(query || '')).filter(Boolean);
-        }
-        throw new Error('webSearch 必须是 {"queries":["关键词"]}、{"query":"关键词"} 或字符串数组');
+        parsed = JSON.parse(candidate[2].trim());
       } catch (error) {
-        log.warn('AI returned invalid webSearch JSON', error);
-        throw new Error(`AI 返回的 webSearch JSON 无效: ${error.message}`);
+        parsed = this.extractJSONFromText(candidate[2]);
+        if (parsed) {
+          log.warn('AI webSearch JSON recovered from noisy code block', {reason: error.message});
+        }
+      }
+      if (parsed === null) continue;
+      if (typeof parsed === 'string') return [parsed];
+      if (Array.isArray(parsed)) return parsed.map(query => String(query || '')).filter(Boolean);
+      if (parsed && typeof parsed.query === 'string') return [parsed.query];
+      if (parsed && Array.isArray(parsed.queries)) {
+        return parsed.queries.map(query => String(query || '')).filter(Boolean);
+      }
+      throw new Error('webSearch 必须是 {"queries":["关键词"]}、{"query":"关键词"} 或字符串数组');
+    }
+    const fromFullText = this.extractJSONFromText(raw, parsed =>
+      typeof parsed === 'string' ||
+      Array.isArray(parsed) ||
+      (parsed && (typeof parsed.query === 'string' || Array.isArray(parsed.queries)))
+    );
+    if (fromFullText) {
+      log.warn('AI webSearch JSON recovered from full text without code fences');
+      if (typeof fromFullText === 'string') return [fromFullText];
+      if (Array.isArray(fromFullText)) return fromFullText.map(query => String(query || '')).filter(Boolean);
+      if (typeof fromFullText.query === 'string') return [fromFullText.query];
+      if (Array.isArray(fromFullText.queries)) {
+        return fromFullText.queries.map(query => String(query || '')).filter(Boolean);
       }
     }
     return [];
   }
 
   extractContextRequests (content) {
-    const codeBlocks = Array.from(content.matchAll(/```([\w-]*)\s*\n?([\s\S]*?)```/g));
+    const raw = String(content || '');
+    const codeBlocks = Array.from(raw.matchAll(/```([\w-]*)\s*\n?([\s\S]*?)```/g));
     const candidates = codeBlocks.filter(match => match[1].toLowerCase() === 'contextrequests');
     for (const candidate of candidates) {
+      let parsed = null;
       try {
-        const parsed = JSON.parse(candidate[2].trim());
-        const requests = Array.isArray(parsed.requests) ? parsed.requests : Array.isArray(parsed) ? parsed : null;
-        if (!Array.isArray(requests)) {
-          throw new Error('contextRequests must be {"requests":[...]} or a request array');
-        }
-        if (requests.length === 0) {
-          throw new Error('contextRequests.requests cannot be empty');
-        }
-
-        const invalidRequests = [];
-        const normalizedRequests = requests.map((request, index) => {
-          const targetId = request && request.targetId;
-          const rootBlockId = request && (request.rootBlockId || request.rootId);
-          if (typeof targetId !== 'string' || !targetId || typeof rootBlockId !== 'string' || !rootBlockId) {
-            invalidRequests.push(index + 1);
-            return null;
-          }
-          return {targetId, rootBlockId};
-        });
-
-        if (invalidRequests.length) {
-          throw new Error(`contextRequests item(s) ${invalidRequests.join(', ')} need valid targetId and rootBlockId`);
-        }
-
-        return normalizedRequests.slice(0, MAX_CONTEXT_REQUESTS);
+        parsed = JSON.parse(candidate[2].trim());
       } catch (error) {
-        log.warn('AI returned invalid contextRequests JSON', error);
-        throw new Error(`AI 返回的 contextRequests JSON 无效: ${error.message}`);
+        parsed = this.extractJSONFromText(candidate[2]);
+        if (parsed) {
+          log.warn('AI contextRequests JSON recovered from noisy code block', {reason: error.message});
+        }
+      }
+      if (parsed === null) continue;
+      const requests = Array.isArray(parsed.requests) ? parsed.requests : Array.isArray(parsed) ? parsed : null;
+      if (!Array.isArray(requests)) {
+        throw new Error('contextRequests must be {"requests":[...]} or a request array');
+      }
+      if (requests.length === 0) {
+        throw new Error('contextRequests.requests cannot be empty');
+      }
+
+      const invalidRequests = [];
+      const normalizedRequests = requests.map((request, index) => {
+        const targetId = request && request.targetId;
+        const rootBlockId = request && (request.rootBlockId || request.rootId);
+        if (typeof targetId !== 'string' || !targetId || typeof rootBlockId !== 'string' || !rootBlockId) {
+          invalidRequests.push(index + 1);
+          return null;
+        }
+        return {targetId, rootBlockId};
+      });
+
+      if (invalidRequests.length) {
+        throw new Error(`contextRequests item(s) ${invalidRequests.join(', ')} need valid targetId and rootBlockId`);
+      }
+
+      return normalizedRequests.slice(0, MAX_CONTEXT_REQUESTS);
+    }
+    const fromFullText = this.extractJSONFromText(raw, parsed =>
+      parsed && (Array.isArray(parsed.requests) || Array.isArray(parsed))
+    );
+    if (fromFullText) {
+      log.warn('AI contextRequests JSON recovered from full text without code fences');
+      const requests = Array.isArray(fromFullText.requests) ? fromFullText.requests : Array.isArray(fromFullText) ? fromFullText : null;
+      if (Array.isArray(requests) && requests.length) {
+        const normalizedRequests = requests
+          .filter(request => request && typeof request.targetId === 'string' && request.targetId &&
+            typeof (request.rootBlockId || request.rootId) === 'string')
+          .map(request => ({targetId: request.targetId, rootBlockId: request.rootBlockId || request.rootId}));
+        if (normalizedRequests.length) {
+          return normalizedRequests.slice(0, MAX_CONTEXT_REQUESTS);
+        }
       }
     }
     return [];
@@ -1126,9 +1236,11 @@ $script:recognizedText
 
   async requestOperationRevision (assistant, requestMessages, operations, operationError, startedAt) {
     const failedContent = assistant.content;
+    const validTargets = this.getValidTargets();
     const failurePayload = {
       error: operationError.message,
-      operations
+      operations,
+      ...(validTargets.length ? {validTargets} : {})
     };
     assistant.operationResult = {
       ok: false,
@@ -1153,6 +1265,9 @@ $script:recognizedText
         content: [
           '刚才的 ai-operations 没有执行成功。下面是编辑器返回的真实错误和原始操作。',
           '请不要解释失败原因后结束。请直接基于错误修正操作，并重新返回一个可执行的 ```ai-operations``` 或 ```ai-operations-xml```。',
+          ...(validTargets.length ? [
+            `当前项目中真实存在的角色 ID 列表（targetId 必须从中选择，禁止编造）: ${JSON.stringify(validTargets)}`
+          ] : []),
           '如果错误与 JSON 积木连接、循环连接、next/SUBSTACK 有关，优先改用 Blockly XML：<operations><insertScript targetId="角色ID"><xml>...</xml></insertScript></operations>。',
           JSON.stringify(failurePayload)
         ].join('\n\n')
@@ -1200,6 +1315,19 @@ $script:recognizedText
         operationCount: revisedOperations.length
       });
     }
+  }
+
+  /**
+   * 从当前上下文快照中提取真实存在的角色 ID 列表，
+   * 供操作失败修正时提示 AI，降低 targetId 幻觉概率。
+   * @returns {{id: string, name: string}[]}
+   */
+  getValidTargets () {
+    const snapshot = this.contextSnapshot;
+    const targets = snapshot && Array.isArray(snapshot.targets) ? snapshot.targets : [];
+    return targets
+      .filter(target => target && typeof target.id === 'string' && target.id)
+      .map(target => ({id: target.id, name: typeof target.name === 'string' ? target.name : ''}));
   }
 
   async sendMessage (text, selection) {

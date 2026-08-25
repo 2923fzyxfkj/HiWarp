@@ -14,5 +14,6 @@ contextBridge.exposeInMainWorld('DesktopSettingsPreload', {
   setRichPresence: (richPresence) => ipcRenderer.invoke('set-rich-presence', richPresence),
   setCrashDumps: (crashDumps) => ipcRenderer.invoke('set-crash-dumps', crashDumps),
   openUserData: () => ipcRenderer.invoke('open-user-data'),
-  openCrashDumps: () => ipcRenderer.invoke('open-crash-dumps')
+  openCrashDumps: () => ipcRenderer.invoke('open-crash-dumps'),
+  openAbout: () => ipcRenderer.invoke('open-about')
 });
