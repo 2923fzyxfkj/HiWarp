@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('EditorPreload', {
   openAddonSettings: (search) => ipcRenderer.invoke('open-addon-settings', search),
   openPackager: () => ipcRenderer.invoke('open-packager'),
   openAIChat: () => ipcRenderer.invoke('open-ai-chat'),
+  openScratchTextFile: () => ipcRenderer.invoke('open-scratch-text-file'),
   setRestrictedProjectMode: (mode) => ipcRenderer.invoke('set-restricted-project-mode', mode),
   getLogInfo: () => ipcRenderer.invoke('logs:get-info'),
   openLogDirectory: () => ipcRenderer.invoke('logs:open-directory'),

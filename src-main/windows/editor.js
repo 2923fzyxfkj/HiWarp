@@ -564,6 +564,30 @@ class EditorWindow extends ProjectRunningWindow {
       AIChatWindow.forEditor(this);
     });
 
+    this.ipc.handle('open-scratch-text-file', async () => {
+      const result = await dialog.showOpenDialog(this.window, {
+        title: '导入 Scratch 文本代码 (.sp)',
+        defaultPath: settings.lastDirectory,
+        properties: ['openFile'],
+        filters: [
+          {
+            name: 'HiWarp 文本项目',
+            extensions: ['sp']
+          }
+        ]
+      });
+      if (result.canceled || !result.filePaths || !result.filePaths.length) {
+        return null;
+      }
+      const filePath = result.filePaths[0];
+      const content = await fsPromises.readFile(filePath, 'utf-8');
+      return {
+        name: filePath.split(/[\\/]/).pop(),
+        path: filePath,
+        content
+      };
+    });
+
     this.ipc.handle('set-restricted-project-mode', (event, mode) => {
       this.restrictedProjectMode = mode && mode.active ? mode : null;
     });

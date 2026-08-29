@@ -112,6 +112,31 @@ const speakButtonStyle = {
 };
 const permissionGridStyle = {display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.4rem 0.6rem', marginTop: '0.85rem'};
 const sessionCardStyle = {...glassStyle, margin: '0 0.85rem 0.75rem', padding: '0.85rem', borderRadius: '1rem'};
+const reviewCardStyle = {
+  margin: '0.75rem 0.85rem 0',
+  padding: '0.8rem',
+  borderRadius: '1rem',
+  background: 'rgba(32, 42, 40, 0.95)',
+  border: '1px solid rgba(240, 190, 90, 0.5)',
+  boxShadow: '0 12px 30px rgba(0, 0, 0, 0.25)',
+  fontSize: '0.82rem'
+};
+const undoButtonStyle = {
+  marginLeft: '0.5rem',
+  padding: '0.18rem 0.55rem',
+  border: 0,
+  borderRadius: '999px',
+  background: 'rgba(62, 91, 106, 0.82)',
+  color: '#eef5fa',
+  fontSize: '0.72rem',
+  cursor: 'pointer'
+};
+
+// 免费 DeepSeek 错误提示增强：未安装时引导运行安装命令
+const formatFreeError = error => {
+  const text = String(error || '');
+  return text;
+};
 const footerStyle = {
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr) auto auto',
@@ -767,6 +792,11 @@ const permissionForOperation = type => ({
   deleteVariable: 'updateVariable',
   updateTarget: 'updateTarget',
   updateSprite: 'updateSprite',
+  uploadCostume: 'updateTarget',
+  uploadBackdrop: 'updateTarget',
+  uploadSound: 'updateTarget',
+  deleteCostume: 'updateTarget',
+  deleteSound: 'updateTarget',
   selectTarget: 'updateTarget',
   duplicateTarget: 'manageTargets',
   deleteTarget: 'manageTargets',
@@ -839,6 +869,72 @@ const loadExtension = async (vm, operation) => {
     return url;
   }
   throw new Error('loadExtension 缺少 extensionId 或 url');
+};
+
+// 从 URL 下载资源并创建 scratch-storage asset（带 asset 属性，loadCostume 会直接用）
+const createAssetFromURL = async (vm, url, {isVector, format}) => {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`资源下载失败: HTTP ${response.status}`);
+  const data = new Uint8Array(await response.arrayBuffer());
+  const storage = vm.runtime.storage;
+  const assetType = isVector ? storage.AssetType.ImageVector : storage.AssetType.ImageBitmap;
+  return storage.createAsset(assetType, format, data, null, true);
+};
+
+const addCostumeFromURL = async (vm, operation) => {
+  const {targetId, name, url} = operation;
+  if (!url) throw new Error('uploadCostume/uploadBackdrop 需要 url');
+  const isVector = /\.svg(\?|$)/i.test(url);
+  const format = isVector ? 'svg' : 'png';
+  const asset = await createAssetFromURL(vm, url, {isVector, format});
+  const md5ext = `${asset.assetId}.${format}`;
+  const costumeObject = {
+    name: name || 'AI 造型',
+    bitmapResolution: isVector ? 1 : 2,
+    dataFormat: format,
+    rotationCenterX: 0,
+    rotationCenterY: 0,
+    asset,
+    assetId: asset.assetId,
+    md5ext
+  };
+  await vm.addCostume(md5ext, costumeObject, targetId);
+  return md5ext;
+};
+
+const addSoundFromURL = async (vm, operation) => {
+  const {targetId, name, url} = operation;
+  if (!url) throw new Error('uploadSound 需要 url');
+  const format = /\.wav(\?|$)/i.test(url) ? 'wav' : 'mp3';
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`资源下载失败: HTTP ${response.status}`);
+  const data = new Uint8Array(await response.arrayBuffer());
+  const storage = vm.runtime.storage;
+  const asset = storage.createAsset(storage.AssetType.Sound, format, data, null, true);
+  const md5ext = `${asset.assetId}.${format}`;
+  const soundObject = {
+    name: name || 'AI 声音',
+    dataFormat: format,
+    asset,
+    assetId: asset.assetId,
+    md5ext,
+    format
+  };
+  await vm.addSound(soundObject, targetId);
+  return md5ext;
+};
+
+const deleteResourceByName = (vm, operation, kind) => {
+  const target = getTarget(vm, operation.targetId);
+  if (!target) throw new Error(`目标不存在: ${operation.targetId}`);
+  const items = kind === 'costume'
+    ? (target.getCostumes ? target.getCostumes() : (target.sprite && target.sprite.costumes) || [])
+    : (target.getSounds ? target.getSounds() : (target.sprite && target.sprite.sounds) || []);
+  const index = items.findIndex(item => item && item.name === operation.name);
+  if (index === -1) throw new Error(`${kind === 'costume' ? '造型' : '声音'}不存在: ${operation.name}`);
+  if (kind === 'costume') target.deleteCostume(index);
+  else target.deleteSound(index);
+  return operation.name;
 };
 
 const createVariable = (vm, operation) => {
@@ -990,6 +1086,16 @@ const applyOperations = async (vm, operations, permissions) => {
       } else if (operation.type === 'loadExtension') {
         const id = await loadExtension(vm, operation);
         results.push({type: operation.type, id});
+      } else if (operation.type === 'uploadCostume' || operation.type === 'uploadBackdrop') {
+        const md5ext = await addCostumeFromURL(vm, operation);
+        results.push({type: operation.type, id: md5ext});
+      } else if (operation.type === 'uploadSound') {
+        const md5ext = await addSoundFromURL(vm, operation);
+        results.push({type: operation.type, id: md5ext});
+      } else if (operation.type === 'deleteCostume') {
+        results.push({type: operation.type, id: deleteResourceByName(vm, operation, 'costume')});
+      } else if (operation.type === 'deleteSound') {
+        results.push({type: operation.type, id: deleteResourceByName(vm, operation, 'sound')});
       } else if (operation.type === 'greenFlag') {
         vm.greenFlag();
         results.push({type: operation.type});
@@ -1011,6 +1117,92 @@ const applyOperations = async (vm, operations, permissions) => {
   return {ok: true, results};
 };
 
+// 把 AI 操作汇总成可读描述（审查用）
+const describeOperations = (vm, operations) => {
+  const nameOf = id => {
+    const target = getTarget(vm, id);
+    return target ? (target.isStage ? '舞台' : target.name) : id;
+  };
+  return (operations || []).map(op => {
+    switch (op && op.type) {
+    case 'insertScript':
+      return `向 ${nameOf(op.targetId)} 插入 1 条脚本`;
+    case 'replaceScript':
+      return `替换 ${nameOf(op.targetId)} 的脚本 ${op.rootBlockId || ''}`;
+    case 'deleteScript':
+      return `删除 ${nameOf(op.targetId)} 的脚本 ${op.rootBlockId || ''}`;
+    case 'loadExtension':
+      return `加载扩展 ${op.extensionId || op.url || ''}`;
+    case 'uploadCostume':
+      return `给 ${nameOf(op.targetId)} 添加造型 "${op.name || ''}"（${op.url || ''}）`;
+    case 'uploadBackdrop':
+      return `给舞台添加背景 "${op.name || ''}"（${op.url || ''}）`;
+    case 'uploadSound':
+      return `给 ${nameOf(op.targetId)} 添加声音 "${op.name || ''}"（${op.url || ''}）`;
+    case 'deleteCostume':
+      return `删除 ${nameOf(op.targetId)} 的造型 "${op.name || ''}"`;
+    case 'deleteSound':
+      return `删除 ${nameOf(op.targetId)} 的声音 "${op.name || ''}"`;
+    case 'updateVariable':
+      return `修改变量 ${op.variableId || ''} 的值为 ${JSON.stringify(op.value)}`;
+    case 'createVariable':
+      return `创建变量 ${op.name || ''}`;
+    case 'deleteVariable':
+      return `删除变量 ${op.variableId || ''}`;
+    case 'updateSprite':
+    case 'updateTarget':
+      return `修改 ${nameOf(op.targetId)} 的属性`;
+    case 'selectTarget':
+      return `选中 ${nameOf(op.targetId)}`;
+    case 'duplicateTarget':
+      return `复制角色 ${nameOf(op.targetId)}`;
+    case 'deleteTarget':
+      return `删除角色 ${nameOf(op.targetId)}`;
+    case 'greenFlag':
+      return '点击绿旗';
+    case 'stopAll':
+      return '停止全部';
+    default:
+      return op && op.type ? `执行操作 ${op.type}` : '未知操作';
+    }
+  });
+};
+
+// 对操作涉及的目标保存积木快照 + 变量旧值（撤销用）
+const snapshotForOperations = (vm, operations) => {
+  const Blockly = window.ScratchBlocks || window.Blockly;
+  const workspace = Blockly && Blockly.getMainWorkspace && Blockly.getMainWorkspace();
+  const snapshots = new Map();
+  const variableBefore = {};
+  if (!workspace) return {snapshots, variableBefore};
+  const targetIds = new Set((operations || []).map(op => op && op.targetId).filter(Boolean));
+  for (const targetId of targetIds) {
+    const target = getTarget(vm, targetId);
+    if (!target) continue;
+    const originalId = vm.editingTarget && vm.editingTarget.id;
+    if (originalId !== targetId && typeof vm.setEditingTarget === 'function') {
+      vm.setEditingTarget(targetId);
+    }
+    try {
+      const dom = Blockly.Xml.workspaceToDom(workspace);
+      snapshots.set(targetId, Blockly.Xml.domToText(dom));
+    } catch (error) {
+      // 快照失败不阻断操作
+    }
+    if (originalId && originalId !== targetId && typeof vm.setEditingTarget === 'function') {
+      vm.setEditingTarget(originalId);
+    }
+  }
+  for (const op of operations || []) {
+    if (op && op.type === 'updateVariable' && op.targetId && op.variableId) {
+      const target = getTarget(vm, op.targetId);
+      const variable = target && target.variables && target.variables[op.variableId];
+      if (variable) variableBefore[`${op.targetId}:${op.variableId}`] = variable.value;
+    }
+  }
+  return {snapshots, variableBefore};
+};
+
 class AIChatSidebar extends React.Component {
   constructor (props) {
     super(props);
@@ -1024,7 +1216,9 @@ class AIChatSidebar extends React.Component {
       customSelection: {targetIds: [], scriptIds: {}},
       tabPosition: {right: 0, topRatio: 0.42},
       freeStatusText: '',
-      freeLoginWaiting: false
+      freeLoginWaiting: false,
+      pendingReview: null,
+      undoStack: []
     };
     this.tabDrag = null;
     this.speechUtterance = null;
@@ -1040,13 +1234,9 @@ class AIChatSidebar extends React.Component {
         EditorPreload.ai.respond({id: request.id, error: error.message});
       }
     });
-    this.unsubscribeApply = EditorPreload.ai.onApplyOperations(async request => {
-      try {
-        EditorPreload.ai.respond({id: request.id, result: await applyOperations(this.props.vm, request.operations, request.permissions)});
-      } catch (error) {
-        console.error('[AI] operation apply failed', error);
-        EditorPreload.ai.respond({id: request.id, error: error.message});
-      }
+    this.unsubscribeApply = EditorPreload.ai.onApplyOperations(request => {
+      // 执行前审查：先展示操作清单，等用户确认/拒绝
+      this.setState({pendingReview: request, open: true});
     });
     EditorPreload.ai.getState().then(service => {
       this.setState({service});
@@ -1069,6 +1259,61 @@ class AIChatSidebar extends React.Component {
     EditorPreload.ai.setContextCatalog(makeCatalog(this.props.vm));
   }
 
+  async confirmApply () {
+    const request = this.state.pendingReview;
+    if (!request) return;
+    this.setState({pendingReview: null});
+    const snapshot = snapshotForOperations(this.props.vm, request.operations);
+    try {
+      const result = await applyOperations(this.props.vm, request.operations, request.permissions);
+      this.setState(state => ({
+        undoStack: [...state.undoStack.slice(-9), {
+          snapshots: snapshot.snapshots,
+          variableBefore: snapshot.variableBefore
+        }]
+      }));
+      EditorPreload.ai.respond({id: request.id, result});
+    } catch (error) {
+      console.error('[AI] operation apply failed', error);
+      EditorPreload.ai.respond({id: request.id, error: error.message});
+    }
+  }
+
+  rejectApply () {
+    const request = this.state.pendingReview;
+    if (!request) return;
+    this.setState({pendingReview: null});
+    EditorPreload.ai.respond({
+      id: request.id,
+      result: {ok: true, rejected: true, results: []}
+    });
+  }
+
+  async undoLastOperation () {
+    const undo = this.state.undoStack[this.state.undoStack.length - 1];
+    if (!undo) return;
+    const vm = this.props.vm;
+    const Blockly = window.ScratchBlocks || window.Blockly;
+    const workspace = Blockly && Blockly.getMainWorkspace && Blockly.getMainWorkspace();
+    if (!workspace) throw new Error('积木编辑器尚未就绪');
+    for (const [targetId, xml] of undo.snapshots) {
+      withEditingTarget(vm, targetId, () => {
+        workspace.getAllBlocks(false).forEach(block => block.dispose(true));
+        Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(xml), workspace);
+      });
+    }
+    for (const [key, value] of Object.entries(undo.variableBefore || {})) {
+      const [targetId, variableId] = key.split(':');
+      const target = getTarget(vm, targetId);
+      const variable = target && target.variables && target.variables[variableId];
+      if (variable) variable.value = value;
+    }
+    this.setState(state => ({
+      undoStack: state.undoStack.slice(0, -1),
+      freeStatusText: '已撤销最近一次 AI 操作。'
+    }));
+  }
+
   async checkFreeLogin () {
     this.setState({freeStatusText: '正在检查 DeepSeek 登录状态...'});
     try {
@@ -1076,10 +1321,10 @@ class AIChatSidebar extends React.Component {
       this.setState({
         freeStatusText: result && result.ok
           ? (result.hasSession ? '已登录 DeepSeek 网页版。' : '未登录，点击“登录 DeepSeek”在浏览器中完成登录。')
-          : `检查失败: ${(result && result.error) || '未知错误'}`
+          : `检查失败: ${formatFreeError((result && result.error) || '未知错误')}`
       });
     } catch (error) {
-      this.setState({freeStatusText: `检查失败: ${error.message}`});
+      this.setState({freeStatusText: `检查失败: ${formatFreeError(error.message)}`});
     }
   }
 
@@ -1088,10 +1333,10 @@ class AIChatSidebar extends React.Component {
     try {
       const result = await EditorPreload.ai.freeLogin();
       this.setState({
-        freeStatusText: result && result.ok ? '登录完成，可以直接使用了。' : `登录未完成: ${(result && result.error) || '未知错误'}`
+        freeStatusText: result && result.ok ? '登录完成，可以直接使用了。' : `登录未完成: ${formatFreeError((result && result.error) || '未知错误')}`
       });
     } catch (error) {
-      this.setState({freeStatusText: `登录失败: ${error.message}`});
+      this.setState({freeStatusText: `登录失败: ${formatFreeError(error.message)}`});
     } finally {
       this.setState({freeLoginWaiting: false});
     }
@@ -1326,6 +1571,18 @@ class AIChatSidebar extends React.Component {
             <button style={subtleButtonStyle} onClick={() => this.setState({open: false})}>关闭</button>
           </div>
         </header>
+        {this.state.pendingReview && <div style={reviewCardStyle}>
+          <div style={{fontWeight: 700, color: '#ffd166', marginBottom: '0.45rem'}}>AI 请求执行以下操作，请审查：</div>
+          <ul style={{margin: 0, paddingLeft: '1.1rem', lineHeight: 1.7, color: '#e8f0f4'}}>
+            {describeOperations(this.props.vm, this.state.pendingReview.operations).map((desc, index) => (
+              <li key={index}>{desc}</li>
+            ))}
+          </ul>
+          <div style={{display: 'flex', gap: '0.5rem', marginTop: '0.65rem'}}>
+            <button style={{...buttonStyle, flex: 1}} onClick={() => this.confirmApply()}>确认执行</button>
+            <button style={{...subtleButtonStyle, flex: 1}} onClick={() => this.rejectApply()}>拒绝</button>
+          </div>
+        </div>}
         <details style={settingsStyle}>
           <summary style={summaryStyle}>接口、权限与上下文设置</summary>
           <label style={fieldLabelStyle}><input type="checkbox" checked={Boolean(config.freeDeepSeek)} onChange={event => this.updateConfig('freeDeepSeek', event.currentTarget.checked)} />免费使用 DeepSeek（无需 API Key）</label>
@@ -1368,7 +1625,14 @@ class AIChatSidebar extends React.Component {
           </div>
           <div style={messageTextStyle}>{message.content}</div>
           {message.error && <div style={{color: '#ff8a80'}}>{message.error}</div>}
-          {message.operationResult && <div style={{color: message.operationResult.ok === false ? '#ff8a80' : '#9be7a1'}}>{message.operationResult.ok === false ? `AI 操作执行失败: ${message.operationResult.error || '未知错误'}` : '已自动执行 AI 操作。'}</div>}
+          {message.operationResult && <div style={{color: message.operationResult.ok === false ? '#ff8a80' : '#9be7a1'}}>
+            {message.operationResult.ok === false
+              ? `AI 操作执行失败: ${message.operationResult.error || '未知错误'}`
+              : (message.operationResult.rejected ? '已跳过（你拒绝了本次操作）。' : '已自动执行 AI 操作。')}
+            {message.operationResult.ok && !message.operationResult.rejected && (
+              <button style={undoButtonStyle} onClick={() => this.undoLastOperation().catch(error => alert(error.message))}>撤销</button>
+            )}
+          </div>}
         </div>;
         })}</main>
         {service.canContinueLastSession && <div style={sessionCardStyle}>

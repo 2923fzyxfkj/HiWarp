@@ -1,14 +1,18 @@
 /**
- * 免费使用 DeepSeek：通过本地 Python 库 deepseek-notoken-api 调用
- * chat.deepseek.com 网页版，无需 API Key。
+ * 免费使用 DeepSeek：无需 API Key。
  *
- * 依赖: pip install deepseek-notoken-api playwright（参考
- * C:\Users\Canary\Library\Code\GithubProject\deepseek-notoken-api）
+ * 默认使用内置实现（src-main/deepseek-web.js）：
+ * 直接用 Electron 自带的浏览器打开 chat.deepseek.com 完成登录与对话，
+ * 不需要安装 Python / playwright / 任何第三方库，clone 即可用。
+ *
+ * 兼容：如果用户在设置中显式配置了 freeDeepSeekPython 路径，
+ * 则回退到原来的 Python 桥接方式（deepseek-notoken-api）。
  */
 const {execFile, spawn} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const {logger} = require('./logging');
+const {instance: deepseekWeb} = require('./deepseek-web');
 
 const log = logger('deepseek-free');
 
@@ -59,6 +63,11 @@ const resolvePython = pythonPath => {
   if (pythonPath) return pythonPath;
   const home = process.env.USERPROFILE || process.env.HOME || '';
   const candidates = [];
+  // 项目自带环境优先（公开项目开箱即用：npm run setup:deepseek-free）
+  candidates.push(
+    path.join(__dirname, '..', '.venv-deepseek', 'Scripts', 'python.exe'),
+    path.join(__dirname, '..', '.venv-deepseek', 'bin', 'python')
+  );
   if (home) {
     candidates.push(
       path.join(home, 'Library', 'Code', 'GithubProject', 'deepseek-notoken-api', '.venv', 'Scripts', 'python.exe'),
@@ -144,16 +153,39 @@ const run = (pythonPath, action, payload) => new Promise(resolve => {
   child.stdin.end();
 });
 
-const checkLogin = (pythonPath) => run(pythonPath, 'has_session', {})
-  .then(result => result.ok
-    ? {ok: true, hasSession: Boolean(result.hasSession)}
-    : {ok: false, error: result.error});
+const checkLogin = (pythonPath) => {
+  if (pythonPath) return run(pythonPath, 'has_session', {});
+  return Promise.resolve()
+    .then(() => deepseekWeb.hasSession())
+    .then(hasSession => ({ok: true, hasSession}))
+    .catch(error => ({ok: false, error: `WebsiteException:${error.message}`}));
+};
 
-const login = (pythonPath) => run(pythonPath, 'login', {});
+const login = (pythonPath) => {
+  if (pythonPath) return run(pythonPath, 'login', {});
+  return Promise.resolve()
+    .then(() => deepseekWeb.login())
+    .then(result => ({ok: true, result}))
+    .catch(error => ({ok: false, error: `WebsiteException:${error.message}`}));
+};
 
-const input = (pythonPath, payload) => run(pythonPath, 'input', payload);
+const input = (pythonPath, payload) => {
+  if (pythonPath) return run(pythonPath, 'input', payload);
+  const message = payload && payload.message;
+  return Promise.resolve()
+    .then(() => deepseekWeb.input(message))
+    .then(result => ({ok: true, result}))
+    .catch(error => ({ok: false, error: `WebsiteException:${error.message}`}));
+};
 
-const close = (pythonPath) => run(pythonPath, 'close', {});
+const close = (pythonPath) => {
+  if (pythonPath) return run(pythonPath, 'close', {});
+  return Promise.resolve()
+    .then(() => {
+      deepseekWeb.close();
+      return {ok: true, result: 'closed'};
+    });
+};
 
 module.exports = {
   checkLogin,

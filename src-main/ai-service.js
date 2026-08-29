@@ -59,6 +59,24 @@ const decodeXMLAttribute = value => String(value || '')
   .replace(/&gt;/g, '>')
   .replace(/&amp;/g, '&');
 
+// 归一化 AI 回复中的 JSON 文本：去掉"复制/下载"等 UI 垃圾行、
+// 修正 Python 风格的单引号/True/False/None
+const normalizeJSONText = text => {
+  let value = String(text || '').trim();
+  value = value
+    .split('\n')
+    .filter(line => !/^\s*(复制|下载|拷贝|copy|download)\s*$/.test(line))
+    .join('\n');
+  value = value
+    .replace(/\bTrue\b/g, 'true')
+    .replace(/\bFalse\b/g, 'false')
+    .replace(/\bNone\b/g, 'null');
+  if (value.includes("'") && !value.includes('"')) {
+    value = value.replace(/'/g, '"');
+  }
+  return value;
+};
+
 const parseXMLAttributes = text => {
   const attrs = {};
   String(text || '').replace(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g, (match, name, doubleQuoted, singleQuoted) => {
@@ -746,8 +764,9 @@ $script:recognizedText
       '推荐格式二：```ai-operations-xml\n<operations><insertScript targetId="角色ID"><xml><block type="motion_movesteps" x="80" y="80"><value name="STEPS"><shadow type="math_number"><field name="NUM">10</field></shadow></value></block></xml></insertScript></operations>\n```',
       'replaceScript 也支持 XML，但必须提供 rootBlockId：<replaceScript targetId="角色ID" rootBlockId="旧顶层脚本ID">...</replaceScript>。',
       '编辑脚本的实际效果是删除旧脚本并添加新脚本；如果用户要求编辑/修改现有脚本，不要只新增脚本，必须使用 replaceScript 或 deleteScript 后 insertScript 删除旧代码。',
-      '非积木操作仍使用 ai-operations JSON：updateVariable, createVariable, deleteVariable, updateTarget, updateSprite, selectTarget, duplicateTarget, deleteTarget, loadExtension, greenFlag, stopAll, callVmMethod, callTargetMethod。',
-      '允许的 type: insertScript, replaceScript, deleteScript, updateVariable, createVariable, deleteVariable, updateSprite, updateTarget, selectTarget, duplicateTarget, deleteTarget, loadExtension, greenFlag, stopAll, callVmMethod, callTargetMethod。',
+      '非积木操作仍使用 ai-operations JSON：updateVariable, createVariable, deleteVariable, updateTarget, updateSprite, selectTarget, duplicateTarget, deleteTarget, loadExtension, greenFlag, stopAll, callVmMethod, callTargetMethod, uploadCostume, uploadBackdrop, uploadSound, deleteCostume, deleteSound。',
+      '允许的 type: insertScript, replaceScript, deleteScript, updateVariable, createVariable, deleteVariable, updateSprite, updateTarget, selectTarget, duplicateTarget, deleteTarget, loadExtension, greenFlag, stopAll, callVmMethod, callTargetMethod, uploadCostume, uploadBackdrop, uploadSound, deleteCostume, deleteSound。',
+      '资源操作格式：uploadCostume/uploadBackdrop/uploadSound 使用 {type,targetId?,name,url}，url 必须是可直接下载的图片（svg/png）或音频（mp3/wav）地址；删除造型/声音使用 {type,targetId,name}（按名字删除，舞台背景的 target 是舞台）。',
       'XML 必须使用 Scratch/TurboWarp opcode 和 Blockly XML 标签：block、field、value、statement、shadow、next、mutation、comment。不要输出 JavaScript 或未定义操作。',
       '如果必须使用旧 JSON 积木 schema，insertScript/replaceScript 仍兼容 {targetId, rootBlockId?, script:{blocks:[...]}}，但复杂控制结构优先用 XML。'
     ];
@@ -855,7 +874,13 @@ $script:recognizedText
         const parsed = JSON.parse(source.slice(start, end + 1));
         if (!validator || validator(parsed)) return parsed;
       } catch (error) {
-        // 继续尝试下一个 { 起始点
+        // 归一化后重试（垃圾行/单引号/Python 风格）
+        try {
+          const parsed = JSON.parse(normalizeJSONText(source.slice(start, end + 1)));
+          if (!validator || validator(parsed)) return parsed;
+        } catch (error2) {
+          // 继续尝试下一个 { 起始点
+        }
       }
       searchFrom = start + 1;
     }
@@ -1347,10 +1372,12 @@ $script:recognizedText
         this.broadcast();
       }
     }
-    if (!this.contextSnapshot) {
-      if (this.config.contextMode === 'custom') {
+    if (this.config.contextMode === 'custom') {
+      if (!this.contextSnapshot) {
         throw new Error('自定义上下文请先选择脚本并点击“上传上下文”');
       }
+    } else {
+      // 每次发送前都重新上传上下文，避免 AI 使用过期的 targetId/rootBlockId
       await this.uploadContext(selection);
     }
 

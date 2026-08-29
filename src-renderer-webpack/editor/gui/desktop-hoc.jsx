@@ -25,6 +25,7 @@ import {activateTab, BLOCKS_TAB_INDEX} from 'scratch-gui/src/reducers/editor-tab
 import {WrappedFileHandle} from './filesystem-api.js';
 import {setStrings} from '../prompt/prompt.js';
 import AIChatSidebar from './ai-sidebar.jsx';
+import ScratchTextSidebar from '../scratch-text/sidebar.jsx';
 import hiwarpProjectEncryption from 'scratch-vm/src/util/hiwarp-project-encryption';
 import ProjectUnlockModal from 'scratch-gui/src/containers/hiwarp-project-unlock-modal.jsx';
 
@@ -317,6 +318,9 @@ const DesktopHOC = function (WrappedComponent) {
         />
         {!(this.props.restrictedProjectMode && this.props.restrictedProjectMode.active) ? (
           <AIChatSidebar vm={vm} />
+        ) : null}
+        {!(this.props.restrictedProjectMode && this.props.restrictedProjectMode.active) ? (
+          <ScratchTextSidebar vm={vm} />
         ) : null}
         {this.state.unlockRequest ? (
           <ProjectUnlockModal
