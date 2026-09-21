@@ -490,13 +490,46 @@ import {activateTab, BLOCKS_TAB_INDEX} from '../reducers/editor-tab';
 {
     file: 'scratch-gui/src/components/gui/gui.jsx',
     why: 'propTypes 新增 3 个弹窗可见性',
-    marker: '        projectEncryptionModalVisible: PropTypes.bool,',
+    marker: '    projectEncryptionModalVisible: PropTypes.bool,',
     find: `    invalidProjectModalVisible: PropTypes.bool,
 `,
     replace: `    invalidProjectModalVisible: PropTypes.bool,
     projectEncryptionModalVisible: PropTypes.bool,
     ccwExtensionModalVisible: PropTypes.bool,
     extensionImportMethodModalVisible: PropTypes.bool,
+`
+},
+{
+    file: 'scratch-vm/src/serialization/sb3.js',
+    why: '序列化：把待办写成自定义顶层字段 hiwarpTodos（照 customFonts 的样板）',
+    marker: 'obj.hiwarpTodos',
+    find: `    if (fonts) {
+        obj.customFonts = fonts;
+    }
+`,
+    replace: `    if (fonts) {
+        obj.customFonts = fonts;
+    }
+
+    // HiWarp: 待办数据。作为自定义顶层字段写出，其他编辑器（TurboWarp / Scratch）
+    // 的反序列化只读已知字段，会静默忽略它，因此不会崩、也不会显示。
+    if (runtime.hiwarpTodos) {
+        obj.hiwarpTodos = runtime.hiwarpTodos;
+    }
+`
+},
+{
+    file: 'scratch-vm/src/serialization/sb3.js',
+    why: '反序列化：把 hiwarpTodos 读回 runtime',
+    marker: 'runtime.hiwarpTodos = json.hiwarpTodos',
+    find: `    // Extract any custom fonts before loading costumes.
+`,
+    replace: `    // HiWarp: 读回待办数据。缺失时保持 undefined，不影响普通项目。
+    if (json.hiwarpTodos) {
+        runtime.hiwarpTodos = json.hiwarpTodos;
+    }
+
+    // Extract any custom fonts before loading costumes.
 `
 }
 ];
