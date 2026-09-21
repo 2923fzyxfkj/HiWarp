@@ -472,6 +472,32 @@ import {activateTab, BLOCKS_TAB_INDEX} from '../reducers/editor-tab';
         onSetPlayerOnly: playerOnly => dispatch(setPlayer(playerOnly)),
         onActivateBlocksTab: () => dispatch(activateTab(BLOCKS_TAB_INDEX))
     });`
+},
+{
+    file: 'scratch-gui/src/components/gui/gui.jsx',
+    why: 'props 解构新增 3 个弹窗可见性',
+    marker: '        projectEncryptionModalVisible,',
+    find: `        invalidProjectModalVisible,
+        vm,
+`,
+    replace: `        invalidProjectModalVisible,
+        projectEncryptionModalVisible,
+        ccwExtensionModalVisible,
+        extensionImportMethodModalVisible,
+        vm,
+`
+},
+{
+    file: 'scratch-gui/src/components/gui/gui.jsx',
+    why: 'propTypes 新增 3 个弹窗可见性',
+    marker: '        projectEncryptionModalVisible: PropTypes.bool,',
+    find: `    invalidProjectModalVisible: PropTypes.bool,
+`,
+    replace: `    invalidProjectModalVisible: PropTypes.bool,
+    projectEncryptionModalVisible: PropTypes.bool,
+    ccwExtensionModalVisible: PropTypes.bool,
+    extensionImportMethodModalVisible: PropTypes.bool,
+`
 }
 ];
 
