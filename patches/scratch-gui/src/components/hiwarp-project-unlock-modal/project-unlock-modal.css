@@ -1,0 +1,103 @@
+.modal {
+    width: 38rem;
+    max-width: calc(100vw - 3rem);
+}
+
+.body {
+    padding: 1.5rem;
+    color: #1f2937;
+    background: linear-gradient(180deg, #fff8ed 0%, #eef7ff 100%);
+}
+
+.title {
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #102033;
+}
+
+.intro {
+    margin: 0 0 1rem;
+    line-height: 1.55;
+    color: #536173;
+}
+
+.panel {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(22, 88, 150, 0.16);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.label {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #23364d;
+}
+
+.input,
+.select {
+    min-height: 2.4rem;
+    border: 1px solid rgba(31, 68, 116, 0.22);
+    border-radius: 0.65rem;
+    padding: 0 0.75rem;
+    color: #14243a;
+    background: white;
+}
+
+.fileRow {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.fileName {
+    color: #53657d;
+    font-size: 0.82rem;
+}
+
+.status {
+    min-height: 1.25rem;
+    color: #8a4b00;
+    font-weight: 700;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.button,
+.primaryButton {
+    border: 0;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.button {
+    color: #23405f;
+    background: #dcecff;
+}
+
+.primaryButton {
+    color: white;
+    background: linear-gradient(135deg, #f97316, #0ea5e9);
+}
+
+.button:disabled,
+.primaryButton:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
