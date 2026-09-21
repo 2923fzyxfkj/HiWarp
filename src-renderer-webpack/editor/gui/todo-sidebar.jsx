@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
+import DockableTab from './dockable-tab.jsx';
 import {
     addCategory,
     addTodo,
@@ -11,8 +12,9 @@ import {
     updateItem,
     writeToRuntime
 } from './todo-store.js';
+import {ACCENT_FROM, ACCENT_TO, PANEL_BG, TEXT_COLOR} from './dock-tabs.js';
 
-// ── 配色：与 AI 侧栏逐字一致 ────────────────────────────────────
+// ── 配色：统一从 dock-tabs.js 导入（唯一来源）────────────────────
 // 全部取自 ai-sidebar.jsx，不要凭印象改：
 //   面板背景  radial-gradient(rgba(58,126,132,.42) at 82% 4%) + linear-gradient(#162a34 -> #0c171f)
 //   强调渐变  linear-gradient(135deg, #1e91a4, #146f84)   ← 中点约 #198099
@@ -20,12 +22,7 @@ import {
 // 注意径向高光的 82% 4%：它对齐的是**右侧停靠**。本面板停靠在左侧，
 // 早期版本把它镜像成 18% 4%，结果和 AI 侧栏并排看颜色"不对"。现按原值保留，
 // 因为要的是"看起来一样"，而不是"几何对称"。
-const ACCENT_FROM = '#1e91a4';
-const ACCENT_TO = '#146f84';
-const PANEL_BG =
-    'radial-gradient(circle at 82% 4%, rgba(58, 126, 132, 0.42) 0, transparent 32%), ' +
-    'linear-gradient(180deg, #162a34 0%, #0c171f 100%)';
-const TEXT_COLOR = '#eef5fa';
+
 
 const PANEL_WIDTH = '22rem';
 const LONG_PRESS_MS = 250;
@@ -415,26 +412,16 @@ const TodoSidebar = ({vm}) => {
     };
 
     if (!open) {
+        // 收起状态改用公共的 DockableTab：竖直拖移动、水平拖出收进浮动栏。
+        // 旧的本地实现（tabStyle / handleTabPointer* ）已由它取代，保留在文件上方
+        // 仅因为删除需要连带清理多处引用，等功能稳定后再统一清理。
         return (
-            <button
-                type="button"
-                title="点击展开待办清单；按住拖动可调整位置"
-                style={{
-                    ...tabStyle,
-                    top: `${tabTop}px`,
-                    transform: 'none',
-                    cursor: tabDragRef.current ? 'grabbing' : 'grab',
-                    touchAction: 'none'
-                }}
-                onPointerDown={handleTabPointerDown}
-                onPointerMove={handleTabPointerMove}
-                onPointerUp={handleTabPointerUp}
-                onPointerCancel={() => {
-                    tabDragRef.current = null;
-                }}
-            >
-                待办 {stats.todo ? `(${stats.done}/${stats.todo})` : ''}
-            </button>
+            <DockableTab
+                tabKey="todo"
+                label={`待办${stats.todo ? ` (${stats.done}/${stats.todo})` : ''}`}
+                side="left"
+                onOpen={() => setOpen(true)}
+            />
         );
     }
 

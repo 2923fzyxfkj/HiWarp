@@ -27,6 +27,7 @@ import {setStrings} from '../prompt/prompt.js';
 import AIChatSidebar from './ai-sidebar.jsx';
 import ScratchTextSidebar from '../scratch-text/sidebar.jsx';
 import TodoSidebar from './todo-sidebar.jsx';
+import DockTabsBar from './dock-tabs-bar.jsx';
 import hiwarpProjectEncryption from 'scratch-vm/src/util/hiwarp-project-encryption';
 import ProjectUnlockModal from 'scratch-gui/src/containers/hiwarp-project-unlock-modal.jsx';
 
@@ -326,6 +327,7 @@ const DesktopHOC = function (WrappedComponent) {
         {!(this.props.restrictedProjectMode && this.props.restrictedProjectMode.active) ? (
           <TodoSidebar vm={vm} />
         ) : null}
+        <DockTabsBar />
         {this.state.unlockRequest ? (
           <ProjectUnlockModal
             hashAlgorithm={this.state.unlockRequest.manifest.hashAlgorithm}

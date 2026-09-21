@@ -1,4 +1,5 @@
 import React from 'react';
+import DockableTab from '../gui/dockable-tab.jsx';
 import {parse, compileToXML, compileToSB3} from './scratch-text.js';
 
 const drawerStyle = {
@@ -269,11 +270,7 @@ class ScratchTextSidebar extends React.Component {
 
   render () {
     return <React.Fragment>
-      {!this.state.open && <button
-        aria-label="打开文本编程面板"
-        style={tabButtonStyle}
-        onClick={() => this.setState({open: true})}
-      >文本编程</button>}
+      {!this.state.open && <DockableTab tabKey="scratch-text" label="文本编程" side="right" onOpen={() => this.setState({open: true})} />}
       {this.state.open && <aside style={drawerStyle}>
         <header style={headerStyle}>
           <strong style={{fontSize: '1.1rem'}}>文本编程</strong>

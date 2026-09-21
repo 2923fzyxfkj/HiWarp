@@ -1,4 +1,5 @@
 import React from 'react';
+import DockableTab from './dockable-tab.jsx';
 
 const drawerStyle = {
   position: 'fixed',
@@ -1557,7 +1558,7 @@ class AIChatSidebar extends React.Component {
     if (!service || !config) return null;
     const selection = this.state.customSelection;
     return <React.Fragment>
-      {!this.state.open && <button aria-label="打开 AI 助手侧边栏" onMouseDown={event => this.startTabDrag(event)} style={{...tabButtonBaseStyle, right: this.state.tabPosition.right, top: `${this.state.tabPosition.topRatio * 100}%`}}>AI 助手</button>}
+      {!this.state.open && <DockableTab tabKey="ai" label="AI 助手" side="right" onOpen={() => this.setState({open: true})} />}
       {this.state.open && <aside style={drawerStyle}>
         <header style={headerStyle}>
           <div>
