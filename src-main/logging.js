@@ -138,11 +138,27 @@ const setupIPC = () => {
   });
 };
 
+/**
+ * 渲染层的已知无害噪音，不写进日志，以免把真正有用的信息挤下去。
+ *
+ * 目前只有一条：某处第三方代码把非 JSON 字符串交给 JSON.parse，失败后自己
+ * console.error 出来。它从 2026-07 起每次启动都出现（历史日志累计 284 次），
+ * 而解析失败本身已被业务代码用 try/catch 忽略（见 gui.html 与 scratch-gui 的
+ * themePersistance.js），功能上没有任何影响。根因位于 node_modules 里的第三方
+ * 代码，无法直接修；该字符串也不来自 localStorage（已核查），清数据也无效。
+ *
+ * 过滤条件故意收得很窄：必须同时是 SyntaxError 且明确是 JSON 解析失败，
+ * 以免掩盖真正的语法错误。
+ */
+const isIgnoredRendererNoise = message =>
+  message.startsWith('SyntaxError') && message.includes('is not valid JSON');
+
 const attachWebContentsLogging = (webContents, scope) => {
   if (!webContents || webContents.isDestroyed()) return;
 
   webContents.on('console-message', event => {
     const message = event.message || '';
+    if (isIgnoredRendererNoise(message)) return;
     const level = event.level === 'error' && message.startsWith('Warning:') ? 'warning' : event.level;
     write(`renderer-${level || 'log'}`, scope, message, {
       line: event.lineNumber,
