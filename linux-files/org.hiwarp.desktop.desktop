@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=HiWarp
+# Change the path to match where you install the app.
+Exec=/opt/HiWarp/hiwarp %U
+Terminal=false
+Type=Application
+Icon=org.hiwarp.desktop
+StartupWMClass=hiwarp
+Comment=HiWarp is a Scratch mod with a compiler, dark mode, an AI assistant, a text programming language, and more.
+MimeType=application/x.scratch.sb3;application/x.scratch.sb2;application/x.scratch.sb;
+Categories=Development;
+Keywords=scratch;

@@ -7,8 +7,8 @@ const {
 } = require('./brand');
 
 // Set HiWarp's identity before modules read app paths or Electron creates the
-// single-instance lock. Otherwise installed TurboWarp builds can receive HiWarp
-// launch requests because both apps still look like "turbowarp-desktop".
+// single-instance lock. Otherwise an installed TurboWarp build can receive
+// HiWarp launch requests, because the lock identity is derived from the app name.
 app.setName(APP_NAME);
 if (process.platform === 'win32') {
   app.setAppUserModelId(APP_ID);

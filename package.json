@@ -62,7 +62,7 @@
   },
   "main": "./src-main/entrypoint.js",
   "build": {
-    "appId": "org.turbowarp.desktop",
+    "appId": "org.hiwarp.desktop.alpha",
     "productName": "HiWarp",
     "files": [
       "node_modules/**/*",
@@ -99,9 +99,9 @@
     },
     "appx": {
       "artifactName": "${productName}-MS-Store-${version}-${arch}.${ext}",
-      "applicationId": "TurboWarp",
-      "displayName": "TurboWarp",
-      "identityName": "45747ThomasWeber.TurboWarpDesktop",
+      "applicationId": "HiWarp",
+      "displayName": "HiWarp",
+      "identityName": "org.hiwarp.desktop.alpha",
       "publisher": "CN=18FA7D4F-01BF-49F2-BF56-782DCEA49C69",
       "publisherDisplayName": "Thomas Weber",
       "backgroundColor": "#4c97ff",
@@ -153,15 +153,15 @@
       "provisioningProfile": "build/development.provisionprofile"
     },
     "linux": {
-      "executableName": "turbowarp-desktop",
+      "executableName": "hiwarp",
       "artifactName": "${productName}-${os}-${arch}-${version}.${ext}",
       "icon": "./build/",
       "synopsis": "Mod of Scratch with a compiler and more features.",
-      "description": "TurboWarp is a Scratch mod with a compiler to run projects faster, dark mode for your eyes, a bunch of addons to improve the editor, and more.",
+      "description": "HiWarp is a Scratch mod with a compiler, dark mode, an AI assistant, a text programming language, and more.",
       "category": "Development",
       "desktop": {
         "entry": {
-          "StartupWMClass": "turbowarp-desktop",
+          "StartupWMClass": "hiwarp",
           "Keywords": "scratch;"
         }
       },

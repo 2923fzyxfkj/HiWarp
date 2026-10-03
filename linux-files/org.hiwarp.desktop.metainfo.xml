@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2021-2025 Thomas Weber -->
 <component type="desktop-application">
-  <id>org.turbowarp.TurboWarp</id>
-  <launchable type="desktop-id">org.turbowarp.TurboWarp.desktop</launchable>
+  <id>org.hiwarp.desktop</id>
+  <launchable type="desktop-id">org.hiwarp.desktop.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0</project_license>
-  <name>TurboWarp</name>
-  <developer id="org.turbowarp">
-    <name>Thomas Weber</name>
+  <name>HiWarp</name>
+  <developer id="org.hiwarp">
+    <name>HiWarp</name>
   </developer>
   <summary>Make games, animations, and stories</summary>
   <description>
-    <p>A mod of Scratch with a compiler to run projects faster, dark mode for your eyes, a bunch of addons to improve the editor, and more.</p>
+    <p>A mod of Scratch with a compiler, dark mode, an AI assistant, a text programming language, and more.</p>
     <p>Features:</p>
     <ul>
       <li>Runs projects up to 100x faster than Scratch</li>
@@ -25,7 +25,6 @@
       <li>Backpack</li>
       <li>and more</li>
     </ul>
-    <p>You can also use TurboWarp in your browser at https://turbowarp.org/editor</p>
     <p>Project shown in screenshots is https://scratch.mit.edu/projects/425020125/</p>
   </description>
   <screenshots>
