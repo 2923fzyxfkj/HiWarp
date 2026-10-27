@@ -9,7 +9,7 @@
   },
   "type": "commonjs",
   "scripts": {
-    "fetch": "node scripts/download-library-files.mjs && node scripts/download-packager.mjs && node scripts/prepare-extensions.mjs",
+    "fetch": "node scripts/download-library-files.mjs && node scripts/download-packager.mjs && node scripts/prepare-extensions.mjs && node scripts/prepare-material-symbols.mjs",
     "webpack:compile": "webpack",
     "webpack:watch": "webpack --watch",
     "webpack:prod": "cross-env NODE_ENV=production webpack",
@@ -26,6 +26,7 @@
     "@babel/preset-env": "^7.12.16",
     "@babel/preset-react": "^7.13.13",
     "@electron/fuses": "^2.1.1",
+    "@material-symbols/svg-400": "^0.48.2",
     "@turbowarp/extensions": "github:TurboWarp/extensions#master",
     "adm-zip": "^0.5.16",
     "autoprefixer": "^9.8.8",

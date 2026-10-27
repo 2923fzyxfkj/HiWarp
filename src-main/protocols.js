@@ -259,8 +259,16 @@ const createModernProtocolHandler = (metadata) => {
       if (metadata.brotli) {
         // Reading it all into memory is not ideal, but we've had so many problems with streaming
         // files from the asar that I can settle with this.
-        const brotliResponse = await net.fetch(nodeURL.pathToFileURL(`${resolved}.br`));
-        if (brotliResponse.status === 200) {
+        // 注意：不是每个文件都有 .br（比如 Material Symbols 的 SVG 是未压缩的），
+        // 文件不存在时 net.fetch 会抛 ERR_FILE_NOT_FOUND 而不是返回非 200，
+        // 不接住就会把整个请求变成错误响应。
+        let brotliResponse = null;
+        try {
+          brotliResponse = await net.fetch(nodeURL.pathToFileURL(`${resolved}.br`));
+        } catch (error) {
+          brotliResponse = null;
+        }
+        if (brotliResponse && brotliResponse.status === 200) {
           const brotliData = await brotliResponse.arrayBuffer();
           const decompressed = await brotliDecompress(brotliData);
           return new Response(decompressed, {

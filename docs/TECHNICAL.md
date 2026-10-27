@@ -734,6 +734,45 @@ HiWarp 在 `src-renderer-webpack/editor/addons/hiwarp-addon-defaults.js` 维护�
 
 AI 助手另有两项语音相关能力：回复「朗读」使用渲染层的 `speechSynthesis`；语音输入通过 `ai:recognize-speech` 交给主进程。
 
+## 3.11 Material Symbols 图标库（HiWarp 自研）
+
+在「选择一个角色」对话框里增加三个风格标签（轮廓 / 圆角 / 尖锐），点图标即可把该图标作为新角色插入项目。数据来自 Apache-2.0 的离线包 `@material-symbols/svg-400`（v0.48.2，每个风格 3,937 个图标 × 描边/实心两态，共 23,622 个 SVG）。
+
+### 3.11.1 分层
+
+| 部分 | 位置 | 职责 |
+| --- | --- | --- |
+| 取数脚本 | `scripts/prepare-material-symbols.mjs` | 从依赖复制 SVG 到 `dist-library-files/material-symbols/`，生成 `index.json` 与 `LICENSE` |
+| 协议 | `tw-library://`（已有） | 按文件返回 SVG / JSON，`cors: true`，支持子目录 |
+| 逻辑模块 | `patches/scratch-gui/src/lib/hiwarp-material-symbols.js` | 清单加载、条目构建、SVG 尺寸重写、插入角色 |
+| 标签 | `patches/scratch-gui/src/lib/libraries/sprite-tags.js` | 追加三个标签（文案内联，不改 l10n 词条） |
+| 容器 | `patches/scratch-gui/src/containers/sprite-library.jsx` | 把图标条目并入 `data`、处理填充切换与选中插入 |
+| 库组件 | `patches/scratch-gui/src/components/library/library.jsx` | 筛选栏扩展控件槽位、分批渲染、`hiddenInAllTag` |
+
+### 3.11.2 三个关键约束
+
+1. **缩略图不能走 md5 路径**：上游 `library-item.jsx` 把 `iconURL` 写死成 `https://cdn.assets.scratch.mit.edu/internalapi/asset/<md5>/get/`。我们的图标不在 Scratch 素材服务器上，因此条目只给 `rawURL`（`tw-library://./material-symbols/...`），`iconMd5` 留空。
+2. **插入必须让 `storage.load` 能找到资源**：`vm.addSprite` 走 `sb3` 反序列化时，`serialization/sb3.js` 会**重建**造型对象，只挑固定字段（`assetId`/`name`/`bitmapResolution`/旋转中心/`md5ext`/`dataFormat`），**造型上的内联 `asset` 会被丢掉**；随后 `import/load-costume.js` 通过 `storage.load(assetId)` 取素材，取不到就是坏造型（舞台上显示「?」）。
+   因此插入流程是「取 SVG → 重写尺寸 → `storage.createAsset` → **把 asset 登记到 `iconAssets` 并给 storage 注册高优先级 helper** → `vm.addSprite`」，让 `storage.load` 直接在内存命中，不依赖素材服务器。
+   **helper 的接口约定很容易写错**：`ScratchStorage.load()` 是 `if (loading === null) return tryNextHelper();`，只有**同步返回 `null`** 才算「没找到」。返回 `Promise.resolve(null)` 会被当成「找到了一个 null」，后面真正的 helper 再也不会被调用——表现为**全站造型损坏**（连普通角色都变成 `?`）。测试里专门锁了这一条。
+3. **不能混进「所有」标签**：图标共 11,811 条，`selectedTag === 'all'` 时会把常规角色挤出视野，所以条目带 `hiddenInAllTag`，由库组件在「所有」下过滤掉。
+4. **`.br` 探测不能抛**：`tw-library://` 开了 `brotli`，处理器会先试 `<file>.br`。`dist-library-files` 里其它资源都是 brotli 压缩的，而图标是**未压缩**的 SVG，`net.fetch` 找不到 `.br` 时会抛 `ERR_FILE_NOT_FOUND`（不是返回非 200），不接住就会变成整个请求失败（表现为渲染层收到 HTTP 400）。`src-main/protocols.js` 的探测已改为 try/catch 兜底。
+
+### 3.11.3 性能处理
+
+- 每套 3,937 条，库组件默认**分批渲染 400 条**（`RENDER_BATCH`），超出显示「加载更多」按钮；切换标签或搜索词时自动回到首批。
+- 图标清单（`index.json`）只取一次并缓存在容器实例上，不进 React state。
+- 实心是同一目录下的 `<name>-fill.svg`，切换填充只重建条目的 URL 字符串，不重新请求清单。
+
+### 3.11.4 插入行为
+
+- 原始 SVG 是 `viewBox="0 -960 960 960"`（图形画在**负 Y 区域**），所以不能只改 `width/height`：那样造型框是 100×100、墨迹却在框外，表现为「角色列表缩略图有图形、舞台上什么都没有」。插入时会先把原点归一到 `0 0`，内容整体用 `<g transform="translate(0 960)">` 平移回来，再把宽高改成 `MATERIAL_SYMBOL_STAGE_SIZE`（100）。
+- SVG 必须转成**字节**（`TextEncoder`）再交给 `storage.createAsset`：矢量图渲染路径用 `TextDecoder.decode()` 处理素材，传字符串会抛 `parameter 1 is not of type 'ArrayBuffer'`，造型直接变坏（舞台上显示 `?`）。
+- 角色放在舞台中心（0,0），旋转中心为造型中心（50,50），方向 90、缩放 100。
+- 角色名取图标名（如 `home`），便于搜索与脚本引用。
+
+自测：`node patches/scratch-gui/src/lib/hiwarp-material-symbols.test.mjs`
+
 ---
 
 # 4. 构建、打包与发布
@@ -777,6 +816,7 @@ HiWarp 对 `scratch-gui` / `scratch-vm` 的改动曾经**只存在于 `node_modu
 1. `scripts/download-library-files.mjs` —— 扩展库资源
 2. `scripts/download-packager.mjs` —— 打包器页面（sha256 校验 + HiWarp 补丁）
 3. `scripts/prepare-extensions.mjs` —— 编译扩展并生成 brotli 产物
+4. `scripts/prepare-material-symbols.mjs` —— Material Symbols 图标（约 12.7 MB / 23,622 个 SVG）
 
 ## 4.3 开发循环
 
@@ -898,6 +938,12 @@ node SpeedScript/add-copyright.js
 | `vendor/purify.min.js` | 3.4.5 | MPL-2.0 OR Apache-2.0 | 保留文件头许可证声明 |
 
 两份文件均未修改；升级时按 `vendor/README.md` 的步骤重新复制并更新版本号。
+
+Material Symbols 图标（见 3.11）也属于随包分发的第三方素材：
+
+| 来源 | 版本 | 许可证 | 义务 |
+| --- | --- | --- | --- |
+| `@material-symbols/svg-400` | 0.48.2 | Apache-2.0 | 分发时附带 `LICENSE`（`prepare-material-symbols.mjs` 会自动复制到 `dist-library-files/material-symbols/LICENSE`） |
 
 ## 5.3 发布前检查
 
