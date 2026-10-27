@@ -1,0 +1,704 @@
+
+> hiwarp-desktop@2.0.2-alp.1 webpack:prod
+> cross-env NODE_ENV=production webpack
+
+Browserslist: browsers data (caniuse-lite) is 14 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[BABEL] Note: The code generator has deoptimised the styling of C:\Users\Canary\Library\Code\Medium+Project\HiWarp Desktop\node_modules\@turbowarp\scratch-l10n\locales\editor-msgs.js as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of C:\Users\Canary\Library\Code\Medium+Project\HiWarp Desktop\node_modules\text-encoding\lib\encoding-indexes.js as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of C:\Users\Canary\Library\Code\Medium+Project\HiWarp Desktop\node_modules\scratch-blocks\msg\scratch_msgs.js as it exceeds the max of 500KB.
+[BABEL] Note: The code generator has deoptimised the styling of C:\Users\Canary\Library\Code\Medium+Project\HiWarp Desktop\node_modules\scratch-blocks\blockly_compressed_vertical.js as it exceeds the max of 500KB.
+(node:29444) DeprecationWarning: Tapable.apply is deprecated. Call apply on the plugin directly instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Hash: 8b6fc3179f423aa7b3d9a0559caece80c9f10107
+Version: webpack 4.47.0
+Child
+    Hash: 8b6fc3179f423aa7b3d9
+    Time: 44917ms
+    Built at: 2026/10/03 17:01:13
+                                                                                Asset        Size  Chunks                                Chunk Names
+                                                                           0.index.js     1.2 KiB       0  [emitted]                     addon-entry-block-count
+                                                                           1.index.js    12.9 KiB       1  [emitted]                     addon-entry-block-palette-icons
+                                                                          10.index.js    2.23 KiB      10  [emitted]                     addon-entry-custom-zoom
+                                                                          11.index.js    3.09 KiB      11  [emitted]                     addon-entry-data-category-tweaks-v2
+                                                                          12.index.js    3.85 KiB      12  [emitted]                     addon-entry-default-costume-editor-color
+                                                                          13.index.js   913 bytes      13  [emitted]                     addon-entry-disable-paste-offset
+                                                                          14.index.js    1.05 KiB      14  [emitted]                     addon-entry-disable-stage-drag-select
+                                                                          15.index.js    1.38 KiB      15  [emitted]                     addon-entry-editor-buttons-reverse-order
+                                                                          16.index.js    1.74 KiB      16  [emitted]                     addon-entry-editor-colored-context-menus
+                                                                          17.index.js    18.1 KiB      17  [emitted]                     addon-entry-editor-compact
+                                                                          18.index.js    1.89 KiB      18  [emitted]                     addon-entry-editor-extra-keys
+                                                                          19.index.js    2.69 KiB      19  [emitted]                     addon-entry-editor-number-arrow-keys
+                                                                           2.index.js    4.48 KiB       2  [emitted]                     addon-entry-blocks2image
+                                                                          20.index.js   689 bytes      20  [emitted]                     addon-entry-editor-sounds
+                                                                          21.index.js    2.24 KiB      21  [emitted]                     addon-entry-editor-square-inputs
+                                                                          22.index.js    3.38 KiB      22  [emitted]                     addon-entry-editor-stage-left
+                                                                          23.index.js    2.96 KiB      23  [emitted]                     addon-entry-editor-stepping
+                                                                          24.index.js    2.16 KiB      24  [emitted]                     addon-entry-expanded-backpack
+                                                                          25.index.js     6.8 KiB      25  [emitted]                     addon-entry-fullscreen
+                                                                          26.index.js   754 bytes      26  [emitted]                     addon-entry-hide-delete-button
+                                                                          27.index.js    10.1 KiB      27  [emitted]                     addon-entry-hide-flyout
+                                                                          28.index.js   489 bytes      28  [emitted]                     addon-entry-hide-new-variables
+                                                                          29.index.js    4.61 KiB      29  [emitted]                     addon-entry-hide-stage
+                                                                           3.index.js    8.49 KiB       3  [emitted]                     addon-entry-cat-blocks
+                                                                          30.index.js    1.09 KiB      30  [emitted]                     addon-entry-initialise-sprite-position
+                                                                          31.index.js   493 bytes      31  [emitted]                     addon-entry-load-extensions
+                                                                          32.index.js    7.93 KiB      32  [emitted]                     addon-entry-mediarecorder
+                                                                          33.index.js     2.2 KiB      33  [emitted]                     addon-entry-mouse-pos
+                                                                          34.index.js   526 bytes      34  [emitted]                     addon-entry-move-to-top-layer
+                                                                          35.index.js   370 bytes      35  [emitted]                     addon-entry-no-script-bumping
+                                                                          36.index.js   487 bytes      36  [emitted]                     addon-entry-number-pad
+                                                                          37.index.js    2.35 KiB      37  [emitted]                     addon-entry-paint-by-default
+                                                                          38.index.js   409 bytes      38  [emitted]                     addon-entry-remove-curved-stage-border
+                                                                          39.index.js   721 bytes      39  [emitted]                     addon-entry-remove-sprite-confirm
+                                                                           4.index.js    4.43 KiB       4  [emitted]                     addon-entry-clones
+                                                                          40.index.js   694 bytes      40  [emitted]                     addon-entry-script-snap
+                                                                          41.index.js    2.21 KiB      41  [emitted]                     addon-entry-search-sprites
+                                                                          42.index.js     6.6 KiB      42  [emitted]                     addon-entry-sprite-properties
+                                                                          43.index.js    5.94 KiB      43  [emitted]                     addon-entry-swap-local-global
+                                                                          44.index.js    1.04 KiB      44  [emitted]                     addon-entry-transparent-orphans
+                                                                          45.index.js   256 bytes      45  [emitted]                     addon-entry-tw-disable-cloud-variables
+                                                                          46.index.js   251 bytes      46  [emitted]                     addon-entry-tw-disable-compiler
+                                                                          47.index.js    1.09 KiB      47  [emitted]                     addon-entry-tw-disable-vibration
+                                                                          48.index.js   512 bytes      48  [emitted]                     addon-entry-tw-remove-backpack
+                                                                          49.index.js   319 bytes      49  [emitted]                     addon-entry-tw-remove-feedback
+                                                                           5.index.js    6.08 KiB       5  [emitted]                     addon-entry-columns
+                                                                          50.index.js   535 bytes      50  [emitted]                     addon-entry-tw-straighten-comments
+                                                                          51.index.js    11.5 KiB      51  [emitted]                     addon-entry-variable-manager
+                                                                          52.index.js    10.8 KiB      52  [emitted]                     addon-entry-vol-slider
+                                                                          53.index.js    2.42 KiB      53  [emitted]                     addon-entry-zebra-striping
+                                                                          54.index.js    14.7 KiB      54  [emitted]                     addon-l10n-de
+                                                                          55.index.js    14.6 KiB      55  [emitted]                     addon-l10n-es
+                                                                          56.index.js    15.2 KiB      56  [emitted]                     addon-l10n-fi
+                                                                          57.index.js    15.2 KiB      57  [emitted]                     addon-l10n-fr
+                                                                          58.index.js      15 KiB      58  [emitted]                     addon-l10n-hu
+                                                                          59.index.js    15.1 KiB      59  [emitted]                     addon-l10n-it
+                                                                           6.index.js    2.58 KiB       6  [emitted]                     addon-entry-copy-reporter
+                                                                          60.index.js    16.1 KiB      60  [emitted]                     addon-l10n-ja
+                                                                          61.index.js    14.8 KiB      61  [emitted]                     addon-l10n-ko
+                                                                          62.index.js    13.8 KiB      62  [emitted]                     addon-l10n-nl
+                                                                          63.index.js    14.1 KiB      63  [emitted]                     addon-l10n-pl
+                                                                          64.index.js    13.3 KiB      64  [emitted]                     addon-l10n-pt
+                                                                          65.index.js    6.97 KiB      65  [emitted]                     addon-l10n-ro
+                                                                          66.index.js    19.9 KiB      66  [emitted]                     addon-l10n-ru
+                                                                          67.index.js    14.7 KiB      67  [emitted]                     addon-l10n-sl
+                                                                          68.index.js    15.2 KiB      68  [emitted]                     addon-l10n-tr
+                                                                          69.index.js    13.5 KiB      69  [emitted]                     addon-l10n-zh-cn
+                                                                           7.index.js    3.92 KiB       7  [emitted]                     addon-entry-custom-block-shape
+                                                                          70.index.js    11.7 KiB      70  [emitted]                     addon-l10n-zh-tw
+                                                                          72.index.js     158 KiB      72  [emitted]                     vendors~addon-default-entry
+                                                                          73.index.js    41.8 KiB      73  [emitted]                     vendors~addon-entry-2d-color-picker
+                                                                          74.index.js    34.6 KiB      74  [emitted]                     vendors~addon-entry-better-img-uploads
+                                                                          75.index.js     242 KiB      75  [emitted]                     vendors~addon-entry-debugger
+                                                              75.index.js.LICENSE.txt   267 bytes          [emitted]                     
+                                                                          76.index.js    41.3 KiB      76  [emitted]                     vendors~addon-entry-editor-theme3
+                                                                          77.index.js    29.8 KiB      77  [emitted]                     vendors~addon-entry-gamepad
+                                                                          78.index.js    35.3 KiB      78  [emitted]                     vendors~addon-entry-paint-snap
+                                                                          79.index.js    62.5 KiB      79  [emitted]                     vendors~addons
+                                                                           8.index.js    2.56 KiB       8  [emitted]                     addon-entry-custom-block-text
+                                                                          80.index.js    38.9 KiB      80  [emitted]                     vendors~iframe-extension-worker
+                                                                          81.index.js    19.7 KiB      81  [emitted]                     vendors~library-backdrops
+                                                                          82.index.js     204 KiB      82  [emitted]                     vendors~library-costumes
+                                                                          83.index.js    68.6 KiB      83  [emitted]                     vendors~library-sounds
+                                                                          84.index.js     284 KiB      84  [emitted]              [big]  vendors~library-sprites
+                                                                          85.index.js    1.96 MiB      85  [emitted]              [big]  vendors~sb
+                                                                           9.index.js   869 bytes       9  [emitted]                     addon-entry-custom-menu-bar
+                                                                             gui.html    2.87 KiB          [emitted]                     
+                                                                             index.js    7.35 MiB      71  [emitted]              [big]  main
+                                                                 index.js.LICENSE.txt    11.6 KiB          [emitted]                     
+                         js/extension-worker/extension-worker.4aaa845f1847543250e0.js      36 KiB          [emitted] [immutable]         
+                                                                  migrate-helper.html     3.4 KiB          [emitted]                     
+                                                             penguinmod/extensions.js    15.3 KiB          [emitted]                     
+                                   static/assets/00aa0c4320b93631ab3c223604ead431.svg    2.98 KiB          [emitted] [immutable]         
+                                   static/assets/01e9351318d1a9e8db79c3a8826bb493.svg   562 bytes          [emitted] [immutable]         
+                                   static/assets/021bfd85ce85b7f3e1cf407a36e6613c.svg   712 bytes          [emitted] [immutable]         
+                                   static/assets/023d57a276221f40f5e2d39f2efe6951.svg    1.58 KiB          [emitted] [immutable]         
+                                   static/assets/048d12d9e01a42ab48fb6ce57100f6f8.mp3    45.3 KiB          [emitted] [immutable]         
+                                   static/assets/04903d5d763f6735913d1101d2976499.svg   489 bytes          [emitted] [immutable]         
+                                   static/assets/06fd0604a4bf62a2b706edc23e49a086.mp3    73.8 KiB          [emitted] [immutable]         
+                                   static/assets/07abd61d8902b05e7a284918f4a4932c.svg   361 bytes          [emitted] [immutable]         
+                                   static/assets/08d091f51d6d92444f1e68ae3f1f2786.svg   599 bytes          [emitted] [immutable]         
+                                   static/assets/0913dbea3560914c0c52d45183dade77.svg   612 bytes          [emitted] [immutable]         
+                                   static/assets/094ce7c5f638dde8c4989689a59b1bcf.svg   879 bytes          [emitted] [immutable]         
+                                   static/assets/0e23e3ea3e7669d10d21ec7bae5eae90.svg    1.87 KiB          [emitted] [immutable]         
+                                   static/assets/0e45a28b99a6ff0724db5d8ccc051efe.svg   499 bytes          [emitted] [immutable]         
+                                   static/assets/0e4e9ee622762eb0226c7a94570ae5f2.svg    1.59 KiB          [emitted] [immutable]         
+                                   static/assets/111526f3dcca0b32eb40e48bfb4d2bb9.svg    1.31 KiB          [emitted] [immutable]         
+                                   static/assets/1423621b5669142320b9436a119d6c58.svg   615 bytes          [emitted] [immutable]         
+                                   static/assets/14f1c30775a648191bcfac5868fb6964.svg    1.65 KiB          [emitted] [immutable]         
+                                   static/assets/165746cd277a144ddefd62ac5d67b696.svg    2.66 KiB          [emitted] [immutable]         
+                                   static/assets/1894b1327e5ac1a444a40f6f6009b130.svg  1010 bytes          [emitted] [immutable]         
+                                   static/assets/1900166faa9222d0d10c568a12c848a5.png    4.36 KiB          [emitted] [immutable]         
+                                   static/assets/19161c89a6ca04006606ca3f4f91fdec.mp3    21.7 KiB          [emitted] [immutable]         
+                                   static/assets/1ac03a53ecc806b652579f9f8da7c58a.mp3    26.5 KiB          [emitted] [immutable]         
+                                   static/assets/1b4fcd767451e64f23ae2751a5d32620.svg   904 bytes          [emitted] [immutable]         
+                                   static/assets/1bff35b71e6f52017b123be4f9904d54.mp3    52.4 KiB          [emitted] [immutable]         
+                                   static/assets/1c5d77fe149cdc0d6405186c61b6ee67.png    1.43 KiB          [emitted] [immutable]         
+                                   static/assets/1c8b575f37b1a519fc3cdc5183bb85c0.mp3    27.8 KiB          [emitted] [immutable]         
+                                   static/assets/1c9099a7cf1c142492de1603b20b0d44.mp3     2.9 KiB          [emitted] [immutable]         
+                                   static/assets/1cfd544ee0c9ea2e7cae28ea39708872.svg   898 bytes          [emitted] [immutable]         
+                                   static/assets/1f1ce9c55f5e9d4a64c6d68eeefe96fd.svg   523 bytes          [emitted] [immutable]         
+                                   static/assets/1f3383cbc3d5933da17d495586f9cf38.svg   543 bytes          [emitted] [immutable]         
+                                 static/assets/208e2134a0e95cbdd211a82d2863d88d.woff2    73.6 KiB          [emitted] [immutable]         
+                                   static/assets/223d68e7b8769bac1f33291514ce5bac.svg     2.6 KiB          [emitted] [immutable]         
+                                   static/assets/2291f2138819385c9a5750130f254f90.mp3    4.33 KiB          [emitted] [immutable]         
+                                   static/assets/2352f743e6b883d53e0b09b84ddea79b.mp3      23 KiB          [emitted] [immutable]         
+                                   static/assets/23d5956ad3641d4663a17353c71477b0.mp3    24.9 KiB          [emitted] [immutable]         
+                                   static/assets/2501d1b87cf04e00cc3a623fa8b5d95c.svg    2.14 KiB          [emitted] [immutable]         
+                                   static/assets/25b22d39a240dd6bc10f37c45597057b.svg   395 bytes          [emitted] [immutable]         
+                                   static/assets/25c294b62fe9e614db125a4f65cc6044.mp3    27.4 KiB          [emitted] [immutable]         
+                                   static/assets/2613dd347943b2ed7c6edb22e0cf7e0a.mp3    33.1 KiB          [emitted] [immutable]         
+                                   static/assets/266879dd1113d2bab247fa94bf9a1efe.svg   480 bytes          [emitted] [immutable]         
+                                   static/assets/26a4aecd5158e8663b90d5edfba5e25a.mp3    5.15 KiB          [emitted] [immutable]         
+                                   static/assets/26dc094db1ff85b176f3cde371973527.svg    1.51 KiB          [emitted] [immutable]         
+                                   static/assets/296357261fb7d74c06765aadb0ff1026.svg    13.1 KiB          [emitted] [immutable]         
+                                   static/assets/2a60369f450879696853dfd0edb1028f.svg   790 bytes          [emitted] [immutable]         
+                                   static/assets/2bae7059d4f81f344b02cc34567e548d.mp3    24.1 KiB          [emitted] [immutable]         
+                                   static/assets/2c1bbb29b92d87fcebc09360844500dd.svg    1.63 KiB          [emitted] [immutable]         
+                                   static/assets/2caabd551c4ba8f6abe4b137adef5f6c.svg   859 bytes          [emitted] [immutable]         
+                                   static/assets/2cdd3747d1da8c62e3c2ff25dea4cdb9.svg    1.87 KiB          [emitted] [immutable]         
+                                   static/assets/2e107797757c353a6ae6c56e1506766a.svg    1.99 KiB          [emitted] [immutable]         
+                                 static/assets/2e6994cc7c70b524c649f60346bdcb3a.woff2    19.6 KiB          [emitted] [immutable]         
+                                   static/assets/2ea9f74f10ba9fa956d91debccac5fc9.svg    1.99 KiB          [emitted] [immutable]         
+                                   static/assets/2ec048ddd7a7e30b94f8d24c22892112.mp3    35.9 KiB          [emitted] [immutable]         
+                                   static/assets/303ae4bc8e61534eb9c3a2ec1241ab26.svg    1.94 KiB          [emitted] [immutable]         
+                                   static/assets/306ffbcffad0d931fb1d158dd812f3fe.svg     7.1 KiB          [emitted] [immutable]         
+                                   static/assets/30d09ba32a17082ef820b57d52d60b7b.hex     1.1 MiB          [emitted] [immutable]  [big]  
+                                   static/assets/311ef566eba52b1729fd02d8944b4378.mp3    3.33 KiB          [emitted] [immutable]         
+                                   static/assets/3299cad6fda8c0a3d957a5ea75060677.mp3    29.2 KiB          [emitted] [immutable]         
+                                   static/assets/32d903cafc72328bd30afce14bfa4c79.svg    2.01 KiB          [emitted] [immutable]         
+                                   static/assets/32e0021542e34f09a747322d11868f23.mp3    28.2 KiB          [emitted] [immutable]         
+                                   static/assets/344dc88f4d5187f0d86f2f13c9ef1727.mp3    4.99 KiB          [emitted] [immutable]         
+                                   static/assets/352dc6cd98d372680a5297f6ffc50ec4.mp3    3.72 KiB          [emitted] [immutable]         
+                                   static/assets/35577f1e6808337549ba88acff2bed4d.svg    1.12 KiB          [emitted] [immutable]         
+                                   static/assets/367d7189e8dac8a0ca2828830a91db83.mp3    16.7 KiB          [emitted] [immutable]         
+                                   static/assets/37954fe300d44f8765b6d48b2836fcf5.png    20.6 KiB          [emitted] [immutable]         
+                                   static/assets/39484c1a8563de0a63d7bcc9a2a0419a.svg    1.84 KiB          [emitted] [immutable]         
+                                   static/assets/394c4e99e7769f2d3d25f8a874b62936.svg   542 bytes          [emitted] [immutable]         
+                                   static/assets/3a296d85c85a5f222663dad932737c86.svg    2.66 KiB          [emitted] [immutable]         
+                                   static/assets/3c06b74c80d1e6b1d210ca86c87cd326.svg    3.38 KiB          [emitted] [immutable]         
+                                   static/assets/3d55b957c09e11fe0d75f4f2a84bdf53.mp3    27.4 KiB          [emitted] [immutable]         
+                                   static/assets/3d7caeefe1cc190b4e347c9d83b67942.svg   584 bytes          [emitted] [immutable]         
+                                   static/assets/3e6a0a68ee1872bee1f93e4428bcb993.svg     2.1 KiB          [emitted] [immutable]         
+                                   static/assets/3e701c58b9a556e97997dae117ade80b.svg   740 bytes          [emitted] [immutable]         
+                                   static/assets/3f5b54c9956dd564a676a32bd3dea3d4.svg    1.37 KiB          [emitted] [immutable]         
+                                   static/assets/40167d33efb7d0929a3bcbc591fc78b0.svg    4.07 KiB          [emitted] [immutable]         
+                                   static/assets/41ebcde49032d543af1a2c843a725834.mp3      30 KiB          [emitted] [immutable]         
+                                   static/assets/42988384c5d30ef605f96e1c99fd51c3.svg    1.38 KiB          [emitted] [immutable]         
+                                   static/assets/4734f3fe917e80ae53b9f1f4e3d62147.mp3    24.1 KiB          [emitted] [immutable]         
+                                   static/assets/476378027ef47e55598ddc471dec85a4.svg   407 bytes          [emitted] [immutable]         
+                                   static/assets/4842b93e625f575bdec1e60aced16fdc.svg    1.01 KiB          [emitted] [immutable]         
+                                   static/assets/484c379b1da007ecb5f66780a119fa2e.mp3    2.52 KiB          [emitted] [immutable]         
+                                   static/assets/4866a9acaf49dfc1bb539ed650fa8dd1.svg   534 bytes          [emitted] [immutable]         
+                                   static/assets/48df3abff5e8eb9a597f355daaf5348c.png    41.6 KiB          [emitted] [immutable]         
+                                   static/assets/4e73305ba0c59811536ebbeb5246b5f5.svg    1.44 KiB          [emitted] [immutable]         
+                                   static/assets/527756fb4ee6a19086a69e0ea8355b5c.mp3    27.8 KiB          [emitted] [immutable]         
+                                   static/assets/52ac58d8ef4e53d6449e592b68359d46.mp3    78.5 KiB          [emitted] [immutable]         
+                                   static/assets/52d442dc8e71307ec251603d1edd35f0.mp3    30.7 KiB          [emitted] [immutable]         
+                                   static/assets/53a7c1df59b7b5a2fbc5134745a89529.svg   962 bytes          [emitted] [immutable]         
+                                   static/assets/5610fba29744cce750f1da6c6091ecac.mp3    28.3 KiB          [emitted] [immutable]         
+                                   static/assets/566d73a090e3d42d5bdfee3d92c79d25.svg    2.57 KiB          [emitted] [immutable]         
+                                   static/assets/576ae0bd3354cc66bf5297b4873b20eb.svg   437 bytes          [emitted] [immutable]         
+                                   static/assets/579529cc3c40887f6ecc771c4b39809d.mp3    55.9 KiB          [emitted] [immutable]         
+                                 static/assets/5796214a21c5c1727ed7b08096ee7cff.woff2    97.2 KiB          [emitted] [immutable]         
+                                   static/assets/57ab464018d386d54a14aebc663c0c15.svg    1.75 KiB          [emitted] [immutable]         
+                                   static/assets/589eaf6a247df5343b584fd0fa848489.svg    2.54 KiB          [emitted] [immutable]         
+                                   static/assets/592dd8cc418bee4177af3ce8dc28c706.svg   514 bytes          [emitted] [immutable]         
+                                   static/assets/5a864425d1c3a071d048d36a2f47077b.svg    1.24 KiB          [emitted] [immutable]         
+                                   static/assets/5ab762c701bcaef396c684b3fc919647.svg   364 bytes          [emitted] [immutable]         
+                                   static/assets/5b27ed1fb947bba0f00d533b0dc81342.svg    1.05 KiB          [emitted] [immutable]         
+                                   static/assets/5b36d8cf15d803226e2fe4c0737be43f.svg    5.14 KiB          [emitted] [immutable]         
+                                   static/assets/5cea1efe3e84f74aa445b792ce0b0569.png   141 bytes          [emitted] [immutable]         
+                                   static/assets/5d0ac1c235503c3027084ef21df3ec1d.svg    1.22 KiB          [emitted] [immutable]         
+                                   static/assets/5df6609681eb57cd8509ca5947973ffe.svg    1.78 KiB          [emitted] [immutable]         
+                                   static/assets/6113fadc7af99e5923cc06ca809bd4b4.svg    1.96 KiB          [emitted] [immutable]         
+                                   static/assets/61e99f0da6828d62aa9e3761c15ace9f.svg    2.94 KiB          [emitted] [immutable]         
+                                   static/assets/64e4a905e7c3ab32ef03272631c3df75.png    38.3 KiB          [emitted] [immutable]         
+                                   static/assets/64e66a9dcf4b42a699f49e5973a4a62e.svg    3.38 KiB          [emitted] [immutable]         
+                                   static/assets/65715c37a18debd4b44a80c478a3abd7.svg    5.47 KiB          [emitted] [immutable]         
+                                   static/assets/6600c001888b86107d37785276c93a3b.svg   381 bytes          [emitted] [immutable]         
+                                   static/assets/669a2a64e6877f88a5c41fefcff8aa07.svg    1.44 KiB          [emitted] [immutable]         
+                                   static/assets/674db5c2e49df884273ac0f7d221865c.svg    2.58 KiB          [emitted] [immutable]         
+                                   static/assets/679ce05ac8c35bbf83f596e895ab711b.svg    2.56 KiB          [emitted] [immutable]         
+                                   static/assets/6ba5a780d992a3609c925ef3245e5214.svg    1.64 KiB          [emitted] [immutable]         
+                                   static/assets/6c0f71990a33b60b81aa09b5eaaa95e2.svg    14.6 KiB          [emitted] [immutable]         
+                                 static/assets/6cd3397308e11e6d925446470b906f2a.woff2    17.1 KiB          [emitted] [immutable]         
+                                   static/assets/6d912e9240790715a077d422cdbc19a5.mp3    26.3 KiB          [emitted] [immutable]         
+                                   static/assets/6e51f9cfc9bfca2f4fb88d1fe1ec2615.png    25.8 KiB          [emitted] [immutable]         
+                                   static/assets/7056794ed5d021089da12132cf5f2eca.svg   865 bytes          [emitted] [immutable]         
+                                   static/assets/70aa226b166e34708f1d84c30bc47fb9.svg   583 bytes          [emitted] [immutable]         
+                                   static/assets/7231a404390e5fe96856a5ec5182745c.mp3    9.62 KiB          [emitted] [immutable]         
+                                 static/assets/75f5f189fdc419824a8134db6eb63881.woff2    30.3 KiB          [emitted] [immutable]         
+                                   static/assets/76024aad6524bdf0e8d438f4d024e581.png    29.4 KiB          [emitted] [immutable]         
+                                   static/assets/7808d3b49fdf33cb82e053f00a27ba33.png    5.09 KiB          [emitted] [immutable]         
+                                   static/assets/78e3f697df85275aa8d384ca6fc0e288.svg    2.66 KiB          [emitted] [immutable]         
+                                   static/assets/79a644579518611a7b397f85a32cfb85.svg    2.21 KiB          [emitted] [immutable]         
+                                   static/assets/7ad5cc6ed3d0a5fd6a273078fe3999f0.svg    3.15 KiB          [emitted] [immutable]         
+                                   static/assets/7b571046c53ab49d134e5f8e28fc66fe.svg   927 bytes          [emitted] [immutable]         
+                                   static/assets/7bd83c9ad44bff4a20f0c19726adf8be.svg    23.6 KiB          [emitted] [immutable]         
+                                   static/assets/7bebde56e535684371c70356f065ffd7.svg    1.02 KiB          [emitted] [immutable]         
+                                   static/assets/7c410b6c3cd2a9ee41505c5c6951bbf6.png    3.74 KiB          [emitted] [immutable]         
+                                   static/assets/7c67e2601425784a243cd7e0f15c50a3.svg    3.15 KiB          [emitted] [immutable]         
+                                   static/assets/7cf82cd9bd601cfee5e715c0eb5343ef.mp3    22.6 KiB          [emitted] [immutable]         
+                                   static/assets/7d043362c1c4cabd22aeb93b43fc5fc6.svg      44 KiB          [emitted] [immutable]         
+                                   static/assets/7d2d28d80d4ae06acb4fdbde429448e6.svg    3.27 KiB          [emitted] [immutable]         
+                                   static/assets/7dc2424875ec87a872e41f619a4c9459.svg    1.44 KiB          [emitted] [immutable]         
+                                   static/assets/7dc756834ac1de21e7bcdce75dd5ef02.svg     1.3 KiB          [emitted] [immutable]         
+                                   static/assets/7ec28f2bb7bffe8f124a60957e4617ea.svg     1.4 KiB          [emitted] [immutable]         
+                                   static/assets/7efe82fffae735cd083388badd51b3fa.svg    2.58 KiB          [emitted] [immutable]         
+                                   static/assets/80dc53a282d0b4e7e83950ad77d215e5.svg   335 bytes          [emitted] [immutable]         
+                                   static/assets/81945846932ab6cf90a44f49f3a802e7.svg    1.13 KiB          [emitted] [immutable]         
+                                   static/assets/82072226e8cf716289165650c31eeda2.svg    10.9 KiB          [emitted] [immutable]         
+                                   static/assets/82aa0eba517b9756a9db4e3a9144723e.svg    2.05 KiB          [emitted] [immutable]         
+                                   static/assets/831a9fd5f488f356a5031c289e4c35fe.svg    18.5 KiB          [emitted] [immutable]         
+                                   static/assets/83c5bda2e2ae44c697cd007be88bfbe8.svg    1.77 KiB          [emitted] [immutable]         
+                                   static/assets/84fc6dc63094c17c3f131cf3edd20804.svg    1.47 KiB          [emitted] [immutable]         
+                                   static/assets/8505df165b778979791da5caaee96fea.png    19.1 KiB          [emitted] [immutable]         
+                                   static/assets/8589d7e6689f31ec2c251be25ac95c1b.mp3    33.6 KiB          [emitted] [immutable]         
+                                   static/assets/85f62e9e77bed58778782e6cce58c1f4.svg    2.68 KiB          [emitted] [immutable]         
+                                   static/assets/86f568a0ecc0badac2c4952b39fff148.svg    13.4 KiB          [emitted] [immutable]         
+                                   static/assets/87a27dacd799b5474e152388f1b9bbd7.svg    1.21 KiB          [emitted] [immutable]         
+                                   static/assets/87ffbd9d51d1ad2d5aa4a8f44b8a2750.mp3    1.99 KiB          [emitted] [immutable]         
+                                   static/assets/882bd7cccfe3f074ac2ffa46691c53ab.svg   566 bytes          [emitted] [immutable]         
+                                   static/assets/88aacc9b91b376b565bd8ff3d26b5c60.svg   534 bytes          [emitted] [immutable]         
+                                   static/assets/8969372a821bd2a0170ed9a68a3e238d.png    9.56 KiB          [emitted] [immutable]         
+                                   static/assets/89833a109ba5105c76ee1fb007d6811b.svg    29.5 KiB          [emitted] [immutable]         
+                                   static/assets/8acb588a4ea685c684f0faac783d4e89.svg   366 bytes          [emitted] [immutable]         
+                                   static/assets/8bb265d58febbbd917ab6e22a68261d1.svg   904 bytes          [emitted] [immutable]         
+                                   static/assets/8cb33a710b0d38149a334d985d39381b.svg    1.11 KiB          [emitted] [immutable]         
+                                   static/assets/8deb4a2b82fb06cc912594633879c41a.svg    1.53 KiB          [emitted] [immutable]         
+                                   static/assets/9029c9fd5ae893f0030e7a7218e0af4f.svg    1.62 KiB          [emitted] [immutable]         
+                                   static/assets/912e19a8fe314f46ab3df3fed9578a29.mp3    58.9 KiB          [emitted] [immutable]         
+                                   static/assets/939350916a00262af1d6799aea01634f.svg   410 bytes          [emitted] [immutable]         
+                                   static/assets/93babda8f98fc8009c28e97f1f118b6f.png    9.58 KiB          [emitted] [immutable]         
+                                   static/assets/945297ca77c041c98377f204e1af772e.svg    1.96 MiB          [emitted] [immutable]  [big]  
+                                   static/assets/96d18383c71ad5ceff1152859b46c508.mp3    44.6 KiB          [emitted] [immutable]         
+                                   static/assets/9738695e9d1e1edf7df8421725623b25.svg       2 KiB          [emitted] [immutable]         
+                                   static/assets/98bfc66ce081a3750f3b59ab67d0ac75.svg    9.36 KiB          [emitted] [immutable]         
+                                   static/assets/9b7c78f1a8819b8a0ef6e12b7e1ce946.svg   537 bytes          [emitted] [immutable]         
+                                   static/assets/9c0ac6e5681567da6d6f6004ba107658.svg    9.49 KiB          [emitted] [immutable]         
+                                   static/assets/9c604018c786598c0f198af5e798cd16.png    38.4 KiB          [emitted] [immutable]         
+                                   static/assets/9d5be1463602fd5ac397d01e8a436eb2.png    26.3 KiB          [emitted] [immutable]         
+                                   static/assets/9d76e4ccf26072c4bddaa81a765ab08a.mp3    29.8 KiB          [emitted] [immutable]         
+                                   static/assets/9e180d3ed4f47959725a73a95a6a01e5.svg   548 bytes          [emitted] [immutable]         
+                                   static/assets/9e70da906caec2ae2f47d26155822f54.svg    1.32 KiB          [emitted] [immutable]         
+                                   static/assets/a11919e102077f40302da55fb9150440.svg    2.09 KiB          [emitted] [immutable]         
+                                   static/assets/a16ff5830a119789f5bc5d29a42ace64.mp3    19.3 KiB          [emitted] [immutable]         
+                                   static/assets/a386a58fa9c00de141c32b5b11e5327e.mp3    5.11 KiB          [emitted] [immutable]         
+                                   static/assets/a42b5a072afdc2d1aa55accfb1168fb3.mp3    10.2 KiB          [emitted] [immutable]         
+                                   static/assets/a5fdafdf7b163709852ff335457a1475.svg   471 bytes          [emitted] [immutable]         
+                                   static/assets/a6bc1a765fa0a6a1f6385deb7bdc3db7.svg   268 bytes          [emitted] [immutable]         
+                                   static/assets/a72a652fdc84dc6983d3cc9596c36a26.svg    2.96 KiB          [emitted] [immutable]         
+                                   static/assets/a965970c5b4c049c45ed0e39a397bc88.svg   145 bytes          [emitted] [immutable]         
+                                   static/assets/a983c682b2c98ab69adeaad0b74a6573.svg    1.33 KiB          [emitted] [immutable]         
+                                   static/assets/a9eccab64d64a3114344d56af142741e.mp3    27.9 KiB          [emitted] [immutable]         
+                                   static/assets/acbc11ca8d842cdca329bc091b693b8f.svg    1.77 KiB          [emitted] [immutable]         
+                                   static/assets/adc0b35e696de431abb9dd3ea90a5deb.svg    3.22 KiB          [emitted] [immutable]         
+                                   static/assets/ae1bdc92382f0423a839f72f764f9f63.svg   409 bytes          [emitted] [immutable]         
+                                   static/assets/ae5d1592270c82706b2b486112d8c33e.svg   572 bytes          [emitted] [immutable]         
+                                   static/assets/ae6f127c82fab45a5649c646b9702430.svg   888 bytes          [emitted] [immutable]         
+                                   static/assets/aeda07942f02a87d0105ebde05cac1b5.svg   514 bytes          [emitted] [immutable]         
+                                   static/assets/af0caec5f8ac3a35c9769e1e07918e14.mp3    57.4 KiB          [emitted] [immutable]         
+                                   static/assets/af8e46c9477a8cadeb6c26b4686407a5.svg    2.46 KiB          [emitted] [immutable]         
+                                   static/assets/b1f026ce265c0f666e2063ef94b06109.svg    3.29 KiB          [emitted] [immutable]         
+                                   static/assets/b2b4ad5307e24c6627f2077478017981.mp3    26.2 KiB          [emitted] [immutable]         
+                                   static/assets/b3a6f3783f393f641dc3e51211dd50f4.svg    2.14 KiB          [emitted] [immutable]         
+                                   static/assets/b5f8889e91e6d51fc294dfd1125c1240.mp3      33 KiB          [emitted] [immutable]         
+                                   static/assets/b62cee0740a46149a6699d130f6e47e6.svg    1.06 KiB          [emitted] [immutable]         
+                                   static/assets/b631383707e87a454b479dedaa8ca014.svg    3.51 KiB          [emitted] [immutable]         
+                                   static/assets/b74faacb619dad0b5f3871a04a6bcd0e.mp3    5.86 KiB          [emitted] [immutable]         
+                                   static/assets/bc0fbf502b38884f440135ddae40016d.svg    2.46 KiB          [emitted] [immutable]         
+                                   static/assets/bd1e18eb36346861c5c57be8ed2ba5e3.mp3    14.7 KiB          [emitted] [immutable]         
+                                   static/assets/bf550f4c2ff75abf5d2d76e87470af92.svg    2.18 KiB          [emitted] [immutable]         
+                                   static/assets/bf99fbafe9a01e45da63a6874cd8f4b2.mp3    32.6 KiB          [emitted] [immutable]         
+                                   static/assets/c14c0c1e852949eff4e6c069772b0015.svg       2 KiB          [emitted] [immutable]         
+                                   static/assets/c20d558f1fc823a96de910456827d90c.mp3    23.3 KiB          [emitted] [immutable]         
+                                   static/assets/c216c70ef78cc80a1538a3accc6612af.svg    3.93 KiB          [emitted] [immutable]         
+                                   static/assets/c272e47f3597c9f450f35ada315337ca.svg   408 bytes          [emitted] [immutable]         
+                                   static/assets/c35fa9f8ff46299d70efa3bb6dbb0333.svg     1.4 KiB          [emitted] [immutable]         
+                                   static/assets/c3a88fa1746d8e5169db188302979317.svg    13.4 KiB          [emitted] [immutable]         
+                                   static/assets/c40ccf288c211a9441bb714db775d334.mp3     2.5 KiB          [emitted] [immutable]         
+                                   static/assets/c5b3d36982acf8f9acc53c3964100460.mp3      25 KiB          [emitted] [immutable]         
+                                   static/assets/c6ab79fc9e76cb500fc83b6f1c6437d0.png    14.5 KiB          [emitted] [immutable]         
+                                   static/assets/c73619fea5bb43c53a080399a35273be.png    17.7 KiB          [emitted] [immutable]         
+                                   static/assets/c7df528d1ffa1370512c6f0b91868510.svg    1.23 KiB          [emitted] [immutable]         
+                                 static/assets/cb3ac3b4a8540f50937a86af7eb4663c.woff2     166 KiB          [emitted] [immutable]         
+                                   static/assets/cd200d8b59d5c3d4ff3a69a774f5fac3.svg    3.23 KiB          [emitted] [immutable]         
+                                   static/assets/cee477fa706ab6fe733a65edd475c41b.svg    4.13 KiB          [emitted] [immutable]         
+                                   static/assets/cf07199bb768b01e6ac2a5c68fd8c3bb.svg    5.82 KiB          [emitted] [immutable]         
+                                   static/assets/d1c75b7c69630af490f845a930b1e842.svg    1.45 KiB          [emitted] [immutable]         
+                                   static/assets/d1f14e4e1372d8f9c0908d2f45aa5b54.svg    55.4 KiB          [emitted] [immutable]         
+                                   static/assets/d1f6af6170e0178514f35fedc62e5eab.svg    2.14 KiB          [emitted] [immutable]         
+                                   static/assets/d259fcbecaa9d2a22d19848daff9d4c6.svg    2.05 KiB          [emitted] [immutable]         
+                                   static/assets/d4708e8517c8e85b5c1948c845e662ba.mp3    24.1 KiB          [emitted] [immutable]         
+                                   static/assets/d702967ef655c21152bbeb9d72bb4d38.svg   242 bytes          [emitted] [immutable]         
+                                   static/assets/d83d58a2e623f897b1f7068a5b731f49.svg    1.11 KiB          [emitted] [immutable]         
+                                   static/assets/db18366b02c46fdf9033c9a4a13f911b.png    16.9 KiB          [emitted] [immutable]         
+                                   static/assets/db40a1f13b7cb4ae1637d8f08356ba04.svg   814 bytes          [emitted] [immutable]         
+                                   static/assets/dbe832ac8238303e4d1c7901b4924bc8.svg   394 bytes          [emitted] [immutable]         
+                                   static/assets/dd20b00baddbdfa1ee24b968e9345c15.svg   529 bytes          [emitted] [immutable]         
+                                   static/assets/dd8f636a1df01f3d3768998081387ea4.mp3    3.18 KiB          [emitted] [immutable]         
+                                   static/assets/ddc56c08358f429eb8557afc2bd6dce9.svg    1.21 KiB          [emitted] [immutable]         
+                                   static/assets/e0299d18b226e6920a919d6ccb873aef.svg   509 bytes          [emitted] [immutable]         
+                                   static/assets/e04d8c93cf14ec09031b47d619c04f74.svg    7.71 KiB          [emitted] [immutable]         
+                                   static/assets/e241a509b64ba93258b15034722fcb2d.svg    1.22 KiB          [emitted] [immutable]         
+                                   static/assets/e2e3a339dbcb33d83ba9fdc5ac0f3843.mp3    1.83 KiB          [emitted] [immutable]         
+                                   static/assets/e33addbd04bcc3b3ec164132761fc1cd.svg    1.84 KiB          [emitted] [immutable]         
+                                   static/assets/e3a21b920ed4b4c2d9830ec68132c011.svg    8.12 KiB          [emitted] [immutable]         
+                                   static/assets/e3af35844a01f8f64d2bea326db21a35.mp3    31.6 KiB          [emitted] [immutable]         
+                                   static/assets/e3ce31bd057ad800d6b6b609662c7d98.svg    1.72 KiB          [emitted] [immutable]         
+                                   static/assets/e4602da8044dd3c406f22de071d6c6ff.svg   606 bytes          [emitted] [immutable]         
+                                   static/assets/e4cbce63bbd0e4a4f501a1422bcc273a.svg    1.96 KiB          [emitted] [immutable]         
+                                   static/assets/e4dfc45f34b4606356c4c70ba14a96f0.svg    3.35 KiB          [emitted] [immutable]         
+                                   static/assets/e6e16daaf665399c8826497dfb888260.svg    15.2 KiB          [emitted] [immutable]         
+                                   static/assets/e735c0f7305bf874aa49428ff1d7a17f.svg   583 bytes          [emitted] [immutable]         
+                                   static/assets/e75c65e1679e0cc2800caa5c47823daa.mp3    3.59 KiB          [emitted] [immutable]         
+                                   static/assets/e9057037a5bacd79f00fab13c1dec723.svg   320 bytes          [emitted] [immutable]         
+                                   static/assets/e91530fe8f85b7fdc983b48ab3b9885d.svg    2.33 KiB          [emitted] [immutable]         
+                                   static/assets/e95d51ff25efb58e7623d13d9481189f.svg   670 bytes          [emitted] [immutable]         
+                                   static/assets/ea76c2979f20fc68bb390bdc8f3134cf.svg   576 bytes          [emitted] [immutable]         
+                                   static/assets/ecea3eba4a9e187eb6cc7cc6a6b4bb4d.mp3    24.1 KiB          [emitted] [immutable]         
+                                   static/assets/ed3fe9e11706e76990709ac2e567ada6.svg     2.1 KiB          [emitted] [immutable]         
+                                   static/assets/ef4a998a82a8567de018baa4607bc6a0.svg    7.94 KiB          [emitted] [immutable]         
+                                 static/assets/f108ac9d733ce5d45cdea3b7828e8658.woff2    3.68 KiB          [emitted] [immutable]         
+                                   static/assets/f151dc9a8eb14b4d9c64795e1cbae7e0.mp3    26.9 KiB          [emitted] [immutable]         
+                                   static/assets/f44e9579ce45c384ed76054ee5e98270.mp3    35.4 KiB          [emitted] [immutable]         
+                                   static/assets/f5e46b25a43549370160db032dbf5a95.svg    1.83 KiB          [emitted] [immutable]         
+                                   static/assets/f6d9f33ec366a89a58b3cf0e125adf97.svg    3.27 KiB          [emitted] [immutable]         
+                                   static/assets/f724772d92c147940a9ca8188f1837a0.svg   585 bytes          [emitted] [immutable]         
+                                   static/assets/f8e3ced16d9da07b87e419f2cd863f38.svg    1.47 KiB          [emitted] [immutable]         
+                                   static/assets/f9160a2aebcabb880e07487397616871.svg   464 bytes          [emitted] [immutable]         
+                                   static/assets/f9a0fb45ee35279e05b6f4e637509777.svg    2.47 KiB          [emitted] [immutable]         
+                                   static/assets/fc49ecd2cd1f417ddbe0feceef28084d.svg    1.32 KiB          [emitted] [immutable]         
+                                   static/assets/fcb1ec35a76496a688e930d116b2e742.svg   586 bytes          [emitted] [immutable]         
+                                   static/assets/fcb21f71cf289f827e01b18b7c3fdc85.mp3    4.79 KiB          [emitted] [immutable]         
+                                   static/assets/fefb7e2fcd4d311a5a7c3de5a8ae5b64.mp3    2.63 KiB          [emitted] [immutable]         
+                                   static/assets/ff69eb6d9e2044232f0187954982fb3c.png    3.57 KiB          [emitted] [immutable]         
+                                                static/blocks-media/default/click.mp3    7.94 KiB          [emitted]                     
+                                                static/blocks-media/default/click.ogg    5.32 KiB          [emitted]                     
+                                                static/blocks-media/default/click.wav    3.12 KiB          [emitted]                     
+                                   static/blocks-media/default/comment-arrow-down.svg   885 bytes          [emitted]                     
+                                     static/blocks-media/default/comment-arrow-up.svg   977 bytes          [emitted]                     
+                                             static/blocks-media/default/delete-x.svg    1.26 KiB          [emitted]                     
+                                               static/blocks-media/default/delete.mp3    9.57 KiB          [emitted]                     
+                                               static/blocks-media/default/delete.ogg    8.42 KiB          [emitted]                     
+                                               static/blocks-media/default/delete.wav    11.7 KiB          [emitted]                     
+                                  static/blocks-media/default/dropdown-arrow-dark.svg   573 bytes          [emitted]                     
+                                       static/blocks-media/default/dropdown-arrow.svg   569 bytes          [emitted]                     
+                       static/blocks-media/default/extensions/microbit-block-icon.svg     4.9 KiB          [emitted]                     
+                          static/blocks-media/default/extensions/music-block-icon.svg    4.38 KiB          [emitted]                     
+                            static/blocks-media/default/extensions/pen-block-icon.svg    2.47 KiB          [emitted]                     
+                          static/blocks-media/default/extensions/wedo2-block-icon.svg    9.57 KiB          [emitted]                     
+                                           static/blocks-media/default/eyedropper.svg    3.47 KiB          [emitted]                     
+                                           static/blocks-media/default/green-flag.svg    1.16 KiB          [emitted]                     
+                                           static/blocks-media/default/handclosed.cur   326 bytes          [emitted]                     
+                                           static/blocks-media/default/handdelete.cur   766 bytes          [emitted]                     
+                                             static/blocks-media/default/handopen.cur   198 bytes          [emitted]                     
+                                          static/blocks-media/default/icons/arrow.svg    1.18 KiB          [emitted]                     
+                                   static/blocks-media/default/icons/arrow_button.svg    1.06 KiB          [emitted]                     
+                                static/blocks-media/default/icons/control_forever.svg    4.57 KiB          [emitted]                     
+                                 static/blocks-media/default/icons/control_repeat.svg    1.95 KiB          [emitted]                     
+                                   static/blocks-media/default/icons/control_stop.svg   301 bytes          [emitted]                     
+                                   static/blocks-media/default/icons/control_wait.svg    1.11 KiB          [emitted]                     
+                           static/blocks-media/default/icons/event_broadcast_blue.svg    1.62 KiB          [emitted]                     
+                          static/blocks-media/default/icons/event_broadcast_coral.svg    1.62 KiB          [emitted]                     
+                          static/blocks-media/default/icons/event_broadcast_green.svg    1.62 KiB          [emitted]                     
+                        static/blocks-media/default/icons/event_broadcast_magenta.svg    1.62 KiB          [emitted]                     
+                         static/blocks-media/default/icons/event_broadcast_orange.svg    1.62 KiB          [emitted]                     
+                         static/blocks-media/default/icons/event_broadcast_purple.svg    1.61 KiB          [emitted]                     
+             static/blocks-media/default/icons/event_when-broadcast-received_blue.svg    1.61 KiB          [emitted]                     
+            static/blocks-media/default/icons/event_when-broadcast-received_coral.svg    1.62 KiB          [emitted]                     
+            static/blocks-media/default/icons/event_when-broadcast-received_green.svg    1.62 KiB          [emitted]                     
+          static/blocks-media/default/icons/event_when-broadcast-received_magenta.svg    1.62 KiB          [emitted]                     
+           static/blocks-media/default/icons/event_when-broadcast-received_orange.svg    1.62 KiB          [emitted]                     
+           static/blocks-media/default/icons/event_when-broadcast-received_purple.svg    1.61 KiB          [emitted]                     
+                          static/blocks-media/default/icons/event_whenflagclicked.svg   634 bytes          [emitted]                     
+                                         static/blocks-media/default/icons/remove.svg    1.55 KiB          [emitted]                     
+                                   static/blocks-media/default/icons/set-led_blue.svg    1.99 KiB          [emitted]                     
+                                  static/blocks-media/default/icons/set-led_coral.svg    1.99 KiB          [emitted]                     
+                                  static/blocks-media/default/icons/set-led_green.svg    1.99 KiB          [emitted]                     
+                                static/blocks-media/default/icons/set-led_magenta.svg    1.99 KiB          [emitted]                     
+                                static/blocks-media/default/icons/set-led_mystery.svg    2.89 KiB          [emitted]                     
+                                 static/blocks-media/default/icons/set-led_orange.svg    1.99 KiB          [emitted]                     
+                                 static/blocks-media/default/icons/set-led_purple.svg    1.99 KiB          [emitted]                     
+                                  static/blocks-media/default/icons/set-led_white.svg    1.99 KiB          [emitted]                     
+                                 static/blocks-media/default/icons/set-led_yellow.svg    1.99 KiB          [emitted]                     
+                           static/blocks-media/default/icons/wedo_motor-clockwise.svg    3.66 KiB          [emitted]                     
+                    static/blocks-media/default/icons/wedo_motor-counterclockwise.svg    3.64 KiB          [emitted]                     
+                          static/blocks-media/default/icons/wedo_motor-speed_fast.svg    4.23 KiB          [emitted]                     
+                           static/blocks-media/default/icons/wedo_motor-speed_med.svg    4.24 KiB          [emitted]                     
+                          static/blocks-media/default/icons/wedo_motor-speed_slow.svg    4.26 KiB          [emitted]                     
+                       static/blocks-media/default/icons/wedo_when-distance_close.svg    4.64 KiB          [emitted]                     
+                        static/blocks-media/default/icons/wedo_when-tilt-backward.svg     4.8 KiB          [emitted]                     
+                         static/blocks-media/default/icons/wedo_when-tilt-forward.svg    4.81 KiB          [emitted]                     
+                            static/blocks-media/default/icons/wedo_when-tilt-left.svg    3.57 KiB          [emitted]                     
+                           static/blocks-media/default/icons/wedo_when-tilt-right.svg    3.57 KiB          [emitted]                     
+                                 static/blocks-media/default/icons/wedo_when-tilt.svg    4.01 KiB          [emitted]                     
+                                               static/blocks-media/default/repeat.svg    1.21 KiB          [emitted]                     
+                                          static/blocks-media/default/rotate-left.svg    1.04 KiB          [emitted]                     
+                                         static/blocks-media/default/rotate-right.svg    1.03 KiB          [emitted]                     
+                                              static/blocks-media/default/sprites.png    4.05 KiB          [emitted]                     
+                                     static/blocks-media/default/status-not-ready.svg    1.16 KiB          [emitted]                     
+                                         static/blocks-media/default/status-ready.svg    1.09 KiB          [emitted]                     
+                                              static/blocks-media/default/zoom-in.svg   634 bytes          [emitted]                     
+                                             static/blocks-media/default/zoom-out.svg   582 bytes          [emitted]                     
+                                           static/blocks-media/default/zoom-reset.svg   501 bytes          [emitted]                     
+                                          static/blocks-media/high-contrast/click.mp3    7.94 KiB          [emitted]                     
+                                          static/blocks-media/high-contrast/click.ogg    5.32 KiB          [emitted]                     
+                                          static/blocks-media/high-contrast/click.wav    3.12 KiB          [emitted]                     
+                             static/blocks-media/high-contrast/comment-arrow-down.svg   885 bytes          [emitted]                     
+                               static/blocks-media/high-contrast/comment-arrow-up.svg   977 bytes          [emitted]                     
+                                       static/blocks-media/high-contrast/delete-x.svg    1.26 KiB          [emitted]                     
+                                         static/blocks-media/high-contrast/delete.mp3    9.57 KiB          [emitted]                     
+                                         static/blocks-media/high-contrast/delete.ogg    8.42 KiB          [emitted]                     
+                                         static/blocks-media/high-contrast/delete.wav    11.7 KiB          [emitted]                     
+                            static/blocks-media/high-contrast/dropdown-arrow-dark.svg   573 bytes          [emitted]                     
+                                 static/blocks-media/high-contrast/dropdown-arrow.svg   569 bytes          [emitted]                     
+                 static/blocks-media/high-contrast/extensions/microbit-block-icon.svg     4.9 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/extensions/music-block-icon.svg    4.38 KiB          [emitted]                     
+                      static/blocks-media/high-contrast/extensions/pen-block-icon.svg    2.47 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/extensions/wedo2-block-icon.svg    9.57 KiB          [emitted]                     
+                                     static/blocks-media/high-contrast/eyedropper.svg    3.47 KiB          [emitted]                     
+                                     static/blocks-media/high-contrast/green-flag.svg    1.16 KiB          [emitted]                     
+                                     static/blocks-media/high-contrast/handclosed.cur   326 bytes          [emitted]                     
+                                     static/blocks-media/high-contrast/handdelete.cur   766 bytes          [emitted]                     
+                                       static/blocks-media/high-contrast/handopen.cur   198 bytes          [emitted]                     
+                                    static/blocks-media/high-contrast/icons/arrow.svg    1.18 KiB          [emitted]                     
+                             static/blocks-media/high-contrast/icons/arrow_button.svg   470 bytes          [emitted]                     
+                          static/blocks-media/high-contrast/icons/control_forever.svg    4.57 KiB          [emitted]                     
+                           static/blocks-media/high-contrast/icons/control_repeat.svg    1.95 KiB          [emitted]                     
+                             static/blocks-media/high-contrast/icons/control_stop.svg   301 bytes          [emitted]                     
+                             static/blocks-media/high-contrast/icons/control_wait.svg    1.11 KiB          [emitted]                     
+                     static/blocks-media/high-contrast/icons/event_broadcast_blue.svg    1.62 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/icons/event_broadcast_coral.svg    1.62 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/icons/event_broadcast_green.svg    1.62 KiB          [emitted]                     
+                  static/blocks-media/high-contrast/icons/event_broadcast_magenta.svg    1.62 KiB          [emitted]                     
+                   static/blocks-media/high-contrast/icons/event_broadcast_orange.svg    1.62 KiB          [emitted]                     
+                   static/blocks-media/high-contrast/icons/event_broadcast_purple.svg    1.61 KiB          [emitted]                     
+       static/blocks-media/high-contrast/icons/event_when-broadcast-received_blue.svg    1.61 KiB          [emitted]                     
+      static/blocks-media/high-contrast/icons/event_when-broadcast-received_coral.svg    1.62 KiB          [emitted]                     
+      static/blocks-media/high-contrast/icons/event_when-broadcast-received_green.svg    1.62 KiB          [emitted]                     
+    static/blocks-media/high-contrast/icons/event_when-broadcast-received_magenta.svg    1.62 KiB          [emitted]                     
+     static/blocks-media/high-contrast/icons/event_when-broadcast-received_orange.svg    1.62 KiB          [emitted]                     
+     static/blocks-media/high-contrast/icons/event_when-broadcast-received_purple.svg    1.61 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/icons/event_whenflagclicked.svg   634 bytes          [emitted]                     
+                                   static/blocks-media/high-contrast/icons/remove.svg    1.55 KiB          [emitted]                     
+                             static/blocks-media/high-contrast/icons/set-led_blue.svg    1.99 KiB          [emitted]                     
+                            static/blocks-media/high-contrast/icons/set-led_coral.svg    1.99 KiB          [emitted]                     
+                            static/blocks-media/high-contrast/icons/set-led_green.svg    1.99 KiB          [emitted]                     
+                          static/blocks-media/high-contrast/icons/set-led_magenta.svg    1.99 KiB          [emitted]                     
+                          static/blocks-media/high-contrast/icons/set-led_mystery.svg    2.89 KiB          [emitted]                     
+                           static/blocks-media/high-contrast/icons/set-led_orange.svg    1.99 KiB          [emitted]                     
+                           static/blocks-media/high-contrast/icons/set-led_purple.svg    1.99 KiB          [emitted]                     
+                            static/blocks-media/high-contrast/icons/set-led_white.svg    1.99 KiB          [emitted]                     
+                           static/blocks-media/high-contrast/icons/set-led_yellow.svg    1.99 KiB          [emitted]                     
+                     static/blocks-media/high-contrast/icons/wedo_motor-clockwise.svg    3.66 KiB          [emitted]                     
+              static/blocks-media/high-contrast/icons/wedo_motor-counterclockwise.svg    3.64 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/icons/wedo_motor-speed_fast.svg    4.23 KiB          [emitted]                     
+                     static/blocks-media/high-contrast/icons/wedo_motor-speed_med.svg    4.24 KiB          [emitted]                     
+                    static/blocks-media/high-contrast/icons/wedo_motor-speed_slow.svg    4.26 KiB          [emitted]                     
+                 static/blocks-media/high-contrast/icons/wedo_when-distance_close.svg    4.64 KiB          [emitted]                     
+                  static/blocks-media/high-contrast/icons/wedo_when-tilt-backward.svg     4.8 KiB          [emitted]                     
+                   static/blocks-media/high-contrast/icons/wedo_when-tilt-forward.svg    4.81 KiB          [emitted]                     
+                      static/blocks-media/high-contrast/icons/wedo_when-tilt-left.svg    3.57 KiB          [emitted]                     
+                     static/blocks-media/high-contrast/icons/wedo_when-tilt-right.svg    3.57 KiB          [emitted]                     
+                           static/blocks-media/high-contrast/icons/wedo_when-tilt.svg    4.01 KiB          [emitted]                     
+                                         static/blocks-media/high-contrast/repeat.svg   825 bytes          [emitted]                     
+                                    static/blocks-media/high-contrast/rotate-left.svg   590 bytes          [emitted]                     
+                                   static/blocks-media/high-contrast/rotate-right.svg   577 bytes          [emitted]                     
+                                        static/blocks-media/high-contrast/sprites.png    4.05 KiB          [emitted]                     
+                               static/blocks-media/high-contrast/status-not-ready.svg    1.16 KiB          [emitted]                     
+                                   static/blocks-media/high-contrast/status-ready.svg    1.09 KiB          [emitted]                     
+                                        static/blocks-media/high-contrast/zoom-in.svg    1.39 KiB          [emitted]                     
+                                       static/blocks-media/high-contrast/zoom-out.svg    1.16 KiB          [emitted]                     
+                                     static/blocks-media/high-contrast/zoom-reset.svg    1.08 KiB          [emitted]                     
+                                                         static/extensions/ExtFind.js    6.37 KiB          [emitted]                     
+                                                        static/extensions/ExtFind.svg    1.12 MiB          [emitted]              [big]  
+    Entrypoint main [big] = index.js
+       [0] ./node_modules/prop-types/index.js 709 bytes {71} [built]
+       [1] ./node_modules/react/index.js 189 bytes {71} [built]
+       [6] ./node_modules/react-redux/es/index.js + 14 modules 37.5 KiB {71} [built]
+           | ./node_modules/react-redux/es/index.js 229 bytes [built]
+           | ./node_modules/react-redux/es/components/Provider.js 3.04 KiB [built]
+           | ./node_modules/react-redux/es/components/connectAdvanced.js 14 KiB [built]
+           | ./node_modules/react-redux/es/connect/connect.js 5.22 KiB [built]
+           | ./node_modules/react-redux/es/utils/PropTypes.js 428 bytes [built]
+           | ./node_modules/react-redux/es/utils/warning.js 637 bytes [built]
+           | ./node_modules/react-redux/es/utils/Subscription.js 2.58 KiB [built]
+           | ./node_modules/react-redux/es/utils/shallowEqual.js 670 bytes [built]
+           | ./node_modules/react-redux/es/connect/mapDispatchToProps.js 915 bytes [built]
+           | ./node_modules/react-redux/es/connect/mapStateToProps.js 504 bytes [built]
+           | ./node_modules/react-redux/es/connect/mergeProps.js 1.6 KiB [built]
+           | ./node_modules/react-redux/es/connect/selectorFactory.js 4 KiB [built]
+           | ./node_modules/react-redux/es/utils/verifyPlainObject.js 313 bytes [built]
+           | ./node_modules/react-redux/es/connect/wrapMapToProps.js 2.72 KiB [built]
+           | ./node_modules/react-redux/es/connect/verifySubselectors.js 762 bytes [built]
+      [54] ./node_modules/redux/es/index.js + 6 modules 20.7 KiB {71} [built]
+           | ./node_modules/redux/es/index.js 1.05 KiB [built]
+           | ./node_modules/redux/es/createStore.js 8.69 KiB [built]
+           | ./node_modules/redux/es/utils/warning.js 637 bytes [built]
+           | ./node_modules/redux/es/combineReducers.js 5.73 KiB [built]
+           | ./node_modules/redux/es/bindActionCreators.js 1.93 KiB [built]
+           | ./node_modules/redux/es/compose.js 867 bytes [built]
+           | ./node_modules/redux/es/applyMiddleware.js 1.8 KiB [built]
+      [70] ./node_modules/react-dom/index.js 1.32 KiB {71} [built]
+     [147] ./src-renderer-webpack/editor/prompt/prompt.css 1.28 KiB {71} [built]
+     [455] ./node_modules/scratch-gui/src/addons/settings-store-singleton.js + 1 modules 18.6 KiB {71} [built]
+           | ./node_modules/scratch-gui/src/addons/settings-store-singleton.js 320 bytes [built]
+           | ./node_modules/scratch-gui/src/addons/settings-store.js 18.3 KiB [built]
+     [703] ./node_modules/react/cjs/react.production.min.js 8.66 KiB {71} [built]
+     [704] ./node_modules/react-dom/cjs/react-dom.production.min.js 169 KiB {71} [built]
+     [707] ./src-renderer-webpack/editor/gui/web-preload-shim.js 3.18 KiB {71} [built]
+    [1266] ./src-renderer-webpack/editor/gui/normalize.css 1.28 KiB {71} [built]
+    [1268] ./src-renderer-webpack/editor/gui/gui.css 1.27 KiB {71} [built]
+    [1270] ./src-renderer-webpack/editor/gui/media-device-chooser-impl.js 1.24 KiB {71} [built]
+    [1271] ./src-renderer-webpack/editor/gui/index.jsx + 444 modules 4.01 MiB {71} [built]
+           | ./src-renderer-webpack/editor/gui/index.jsx 819 bytes [built]
+           | ./src-renderer-webpack/editor/prompt/prompt.js 3.14 KiB [built]
+           | ./src-renderer-webpack/editor/gui/gui.jsx 1.02 KiB [built]
+           | ./node_modules/scratch-gui/src/index.js 839 bytes [built]
+           | ./src-renderer-webpack/editor/error/error-container-hoc.jsx 1.92 KiB [built]
+           | ./src-renderer-webpack/editor/gui/filesystem-api.js 8.59 KiB [built]
+           | ./src-renderer-webpack/editor/gui/desktop-hoc.jsx 14.9 KiB [built]
+           | ./src-renderer-webpack/editor/gui/cloud-provider-hoc.jsx 3.86 KiB [built]
+           | ./node_modules/scratch-gui/src/containers/hiwarp-project-unlock-modal.jsx 3.41 KiB [built]
+           | ./node_modules/scratch-gui/src/reducers/locales.js 2.17 KiB [built]
+           | ./node_modules/scratch-gui/src/containers/gui.jsx 8.94 KiB [built]
+           | ./node_modules/scratch-gui/src/lib/app-state-hoc.jsx 5.38 KiB [built]
+           | ./src-renderer-webpack/editor/gui/ai-sidebar.jsx 80.3 KiB [built]
+           | ./src-renderer-webpack/editor/scratch-text/sidebar.jsx 13.4 KiB [built]
+           | ./src-renderer-webpack/editor/gui/todo-sidebar.jsx 17.5 KiB [built]
+           |     + 430 hidden modules
+    [1274] ./src-renderer-webpack/editor/gui/addons.js + 2 modules 776 bytes {71} [built]
+           | ./src-renderer-webpack/editor/gui/addons.js 413 bytes [built]
+           | ./node_modules/scratch-gui/src/addons/channels.js 253 bytes [built]
+           | ./node_modules/scratch-gui/src/addons/entry.js 105 bytes [built]
+        + 1482 hidden modules
+    
+    WARNING in Conflict: Multiple assets emit different content to the same filename index.js
+    
+    WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+    This can impact web performance.
+    Assets: 
+      index.js (7.35 MiB)
+      static/assets/945297ca77c041c98377f204e1af772e.svg (1.96 MiB)
+      static/assets/30d09ba32a17082ef820b57d52d60b7b.hex (1.1 MiB)
+      84.index.js (284 KiB)
+      85.index.js (1.96 MiB)
+      static/extensions/ExtFind.svg (1.12 MiB)
+    
+    WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+    Entrypoints:
+      main (7.35 MiB)
+          index.js
+    
+    Child extension worker:
+           Asset      Size  Chunks  Chunk Names
+        index.js  37.2 KiB       0  extension worker
+        Entrypoint extension worker = index.js
+         [0] ./node_modules/scratch-vm/src/util/log.js 96 bytes {0} [built]
+         [1] (webpack)/buildin/global.js 474 bytes {0} [built]
+         [2] ./node_modules/scratch-vm/src/extension-support/tw-extension-worker-context.js 166 bytes {0} [built]
+         [3] ./node_modules/scratch-vm/src/extension-support/argument-type.js 829 bytes {0} [built]
+         [4] ./node_modules/scratch-vm/src/extension-support/block-type.js 1.18 KiB {0} [built]
+         [8] ./node_modules/babel-loader/lib??ref--4!./node_modules/scratch-vm/src/extension-support/tw-iframe-extension-worker-entry.js 587 bytes {0} [built]
+         [9] ./node_modules/scratch-vm/src/extension-support/tw-jquery-shim.js 2.99 KiB {0} [built]
+        [10] ./node_modules/@turbowarp/nanolog/index.js 1.34 KiB {0} [built]
+        [11] ./node_modules/scratch-vm/src/extension-support/extension-worker.js 3.56 KiB {0} [built]
+        [12] ./node_modules/scratch-vm/src/extension-support/tw-extension-api-common.js 388 bytes {0} [built]
+        [13] ./node_modules/scratch-vm/src/extension-support/tw-block-shape.js 590 bytes {0} [built]
+        [15] ./node_modules/scratch-vm/src/extension-support/target-type.js 309 bytes {0} [built]
+        [19] ./node_modules/scratch-vm/src/extension-support/tw-scratchx-compatibility-layer.js 5.96 KiB {0} [built]
+        [21] ./node_modules/scratch-vm/src/dispatch/worker-dispatch.js 3.99 KiB {0} [built]
+        [23] ./node_modules/scratch-vm/src/extension-support/tw-l10n.js 1.32 KiB {0} [built]
+            + 12 hidden modules
+    Child worker:
+                                                               Asset    Size  Chunks                         Chunk Names
+        js/extension-worker/extension-worker.4aaa845f1847543250e0.js  36 KiB       0  [emitted] [immutable]  main
+        Entrypoint main = js/extension-worker/extension-worker.4aaa845f1847543250e0.js
+         [0] ./node_modules/scratch-vm/src/util/log.js 96 bytes {0} [built]
+         [1] ./node_modules/scratch-vm/src/extension-support/argument-type.js 829 bytes {0} [built]
+         [2] ./node_modules/scratch-vm/src/extension-support/block-type.js 1.18 KiB {0} [built]
+         [3] ./node_modules/scratch-vm/src/extension-support/tw-extension-worker-context.js 166 bytes {0} [built]
+         [7] ./node_modules/babel-loader/lib??ref--4!./node_modules/scratch-vm/src/extension-support/extension-worker.js 3.56 KiB {0} [built]
+         [8] (webpack)/buildin/global.js 474 bytes {0} [built]
+         [9] ./node_modules/scratch-vm/src/extension-support/tw-extension-api-common.js 388 bytes {0} [built]
+        [10] ./node_modules/scratch-vm/src/extension-support/tw-block-shape.js 590 bytes {0} [built]
+        [12] ./node_modules/scratch-vm/src/extension-support/target-type.js 309 bytes {0} [built]
+        [13] ./node_modules/scratch-vm/src/util/cast.js 7.19 KiB {0} [built]
+        [15] ./node_modules/scratch-vm/src/extension-support/tw-external.js 2.21 KiB {0} [built]
+        [16] ./node_modules/scratch-vm/src/extension-support/tw-scratchx-compatibility-layer.js 5.96 KiB {0} [built]
+        [17] ./node_modules/scratch-vm/src/extension-support/tw-scratchx-utilities.js 584 bytes {0} [built]
+        [18] ./node_modules/scratch-vm/src/dispatch/worker-dispatch.js 3.99 KiB {0} [built]
+        [21] ./node_modules/scratch-vm/src/extension-support/tw-l10n.js 1.32 KiB {0} [built]
+            + 10 hidden modules
+Child
+    Hash: a0559caece80c9f10107
+    Time: 22185ms
+    Built at: 2026/10/03 17:00:50
+                                                 Asset       Size  Chunks                                Chunk Names
+                                           addons.html  960 bytes          [emitted]                     
+                                              index.js    873 KiB       0  [emitted]              [big]  main
+                                  index.js.LICENSE.txt  915 bytes          [emitted]                     
+    static/assets/2caabd551c4ba8f6abe4b137adef5f6c.svg  859 bytes          [emitted] [immutable]         
+    static/assets/3e701c58b9a556e97997dae117ade80b.svg  740 bytes          [emitted] [immutable]         
+    static/assets/6106dbb46961588a341b95e1443369ec.svg  313 bytes          [emitted] [immutable]         
+    static/assets/7b520a8ed60e73c355bef5ce92450761.svg  345 bytes          [emitted] [immutable]         
+    static/assets/aa518a27b3687f571d8412f21e0831d7.svg  819 bytes          [emitted] [immutable]         
+    static/assets/b631383707e87a454b479dedaa8ca014.svg   3.51 KiB          [emitted] [immutable]         
+    static/assets/c7df528d1ffa1370512c6f0b91868510.svg   1.23 KiB          [emitted] [immutable]         
+    static/assets/cd72c4afdb6ff4c506f2eadc949a1dab.svg  409 bytes          [emitted] [immutable]         
+    static/assets/d2d2db1fbe5e33fc76b8caf137e81da9.svg  371 bytes          [emitted] [immutable]         
+    static/assets/dd65c88aa6468e1f507db9375c6f3a1d.svg  195 bytes          [emitted] [immutable]         
+    static/assets/e89fd13f5c2e9ef6f3c523ed8b506cac.svg  430 bytes          [emitted] [immutable]         
+    static/assets/ef4a998a82a8567de018baa4607bc6a0.svg   7.94 KiB          [emitted] [immutable]         
+    static/assets/f9160a2aebcabb880e07487397616871.svg  464 bytes          [emitted] [immutable]         
+    Entrypoint main [big] = index.js
+     [0] ./node_modules/react/index.js 189 bytes {0} [built]
+     [1] ./node_modules/prop-types/index.js 709 bytes {0} [built]
+     [2] ./node_modules/scratch-gui/src/addons/settings/settings.css 1.21 KiB {0} [built]
+     [3] ./node_modules/classnames/index.js 1.26 KiB {0} [built]
+     [4] ./src-renderer-webpack/editor/prompt/prompt.css 1.28 KiB {0} [built]
+     [5] ./node_modules/scratch-gui/src/addons/generated/upstream-meta.json 20 bytes {0} [built]
+    [10] ./node_modules/scratch-gui/src/addons/settings/translations.json 38.4 KiB {0} [built]
+    [11] ./node_modules/scratch-gui/src/addons/settings/icons/undo.svg 96 bytes {0} [built]
+    [13] ./node_modules/react-dom/index.js 1.32 KiB {0} [built]
+    [14] ./node_modules/scratch-gui/src/addons/settings/en.json 1.07 KiB {0} [built]
+    [16] ./node_modules/scratch-gui/src/addons/settings/icons/extension.svg 96 bytes {0} [built]
+    [17] ./node_modules/scratch-gui/src/addons/settings/icons/brush.svg 96 bytes {0} [built]
+    [18] ./node_modules/scratch-gui/src/addons/settings/icons/expand.svg 96 bytes {0} [built]
+    [19] ./node_modules/scratch-gui/src/addons/settings/icons/info.svg 96 bytes {0} [built]
+    [65] ./src-renderer-webpack/editor/addons/index.jsx + 109 modules 187 KiB {0} [built]
+         | ./src-renderer-webpack/editor/addons/index.jsx 619 bytes [built]
+         | ./node_modules/scratch-gui/src/addons/settings/settings.jsx 35.3 KiB [built]
+         | ./src-renderer-webpack/editor/prompt/prompt.js 3.14 KiB [built]
+         | ./src-renderer-webpack/editor/error/error-container-hoc.jsx 1.92 KiB [built]
+         | ./node_modules/scratch-gui/src/addons/settings/search.js 2.27 KiB [built]
+         | ./node_modules/scratch-gui/src/addons/generated/addon-manifests.js 9.5 KiB [built]
+         | ./node_modules/scratch-gui/src/addons/generated/l10n-settings-entries.js 1.02 KiB [built]
+         | ./node_modules/scratch-gui/src/lib/detect-locale.js 1.63 KiB [built]
+         | ./node_modules/scratch-gui/src/addons/settings-store-singleton.js 320 bytes [built]
+         | ./node_modules/scratch-gui/src/addons/channels.js 253 bytes [built]
+         | ./node_modules/scratch-gui/src/components/tw-fancy-checkbox/checkbox.jsx 682 bytes [built]
+         | ./node_modules/scratch-gui/src/lib/themes/themePersistance.js 2.84 KiB [built]
+         | ./node_modules/scratch-gui/src/lib/themes/guiHelpers.js 2.44 KiB [built]
+         | ./node_modules/scratch-gui/src/addons/addons/cat-blocks/_manifest_entry.js 769 bytes [built]
+         | ./node_modules/scratch-gui/src/addons/addons/editor-devtools/_manifest_entry.js 695 bytes [built]
+         |     + 95 hidden modules
+        + 51 hidden modules
+    
+    WARNING in asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+    This can impact web performance.
+    Assets: 
+      index.js (873 KiB)
+    
+    WARNING in entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+    Entrypoints:
+      main (873 KiB)
+          index.js
+    
+    
+    WARNING in webpack performance recommendations: 
+    You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+    For more info visit https://webpack.js.org/guides/code-splitting/

@@ -1,0 +1,8 @@
+{
+  "defaultApp": true,
+  "argv": [
+    "C:\\Users\\Canary\\Library\\Code\\Medium+Project\\HiWarp Desktop\\node_modules\\electron\\dist\\electron.exe",
+    ".workbuddy/tmp-argv-probe.js"
+  ],
+  "isPackaged": false
+}

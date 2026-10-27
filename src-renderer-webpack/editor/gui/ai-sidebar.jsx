@@ -1,4 +1,6 @@
 import React from 'react';
+import MarkdownIt from 'markdown-it';
+import DOMPurify from 'dompurify';
 import DockableTab from './dockable-tab.jsx';
 
 const drawerStyle = {
@@ -104,6 +106,83 @@ const messageTextStyle = {
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere'
 };
+
+// AI 回复的 Markdown 渲染。
+// html:false 关闭原始 HTML，输出再经 DOMPurify 消毒，双重防注入。
+const assistantMarkdown = new MarkdownIt({
+  html: false,
+  linkify: true,
+  breaks: true
+});
+// 桌面端：链接走新窗口打开，由主进程转交系统浏览器，避免在编辑器内导航。
+const defaultLinkOpen = assistantMarkdown.renderer.rules.link_open ||
+  ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
+assistantMarkdown.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+  tokens[idx].attrSet('target', '_blank');
+  tokens[idx].attrSet('rel', 'noreferrer noopener');
+  return defaultLinkOpen(tokens, idx, options, env, self);
+};
+
+// 流式回复会不断产生新的中间态文本，用带上限的缓存避免同一段内容反复解析。
+const MARKDOWN_CACHE_LIMIT = 200;
+const markdownCache = new Map();
+const renderAssistantMarkdown = content => {
+  const source = typeof content === 'string' ? content : String(content == null ? '' : content);
+  const cached = markdownCache.get(source);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const html = DOMPurify.sanitize(assistantMarkdown.render(source));
+  if (markdownCache.size >= MARKDOWN_CACHE_LIMIT) {
+    markdownCache.clear();
+  }
+  markdownCache.set(source, html);
+  return html;
+};
+const markdownContainerStyle = {overflowWrap: 'anywhere'};
+const markdownStyles = `
+.hiwarp-ai-markdown > :first-child { margin-top: 0; }
+.hiwarp-ai-markdown > :last-child { margin-bottom: 0; }
+.hiwarp-ai-markdown p { margin: 0.35rem 0; }
+.hiwarp-ai-markdown h1, .hiwarp-ai-markdown h2, .hiwarp-ai-markdown h3,
+.hiwarp-ai-markdown h4, .hiwarp-ai-markdown h5, .hiwarp-ai-markdown h6 {
+  margin: 0.6rem 0 0.3rem;
+  line-height: 1.3;
+}
+.hiwarp-ai-markdown h1 { font-size: 1.15rem; }
+.hiwarp-ai-markdown h2 { font-size: 1.08rem; }
+.hiwarp-ai-markdown h3 { font-size: 1rem; }
+.hiwarp-ai-markdown ul, .hiwarp-ai-markdown ol { margin: 0.35rem 0; padding-left: 1.35rem; }
+.hiwarp-ai-markdown li { margin: 0.16rem 0; }
+.hiwarp-ai-markdown li > p { margin: 0; }
+.hiwarp-ai-markdown code {
+  background: rgba(8, 21, 29, 0.55);
+  padding: 0.1em 0.36em;
+  border-radius: 0.32rem;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.88em;
+}
+.hiwarp-ai-markdown pre {
+  margin: 0.45rem 0;
+  padding: 0.6rem 0.72rem;
+  border-radius: 0.55rem;
+  background: rgba(8, 21, 29, 0.62);
+  overflow-x: auto;
+}
+.hiwarp-ai-markdown pre code { background: none; padding: 0; font-size: 0.84rem; line-height: 1.5; }
+.hiwarp-ai-markdown blockquote {
+  margin: 0.45rem 0;
+  padding: 0.1rem 0 0.1rem 0.7rem;
+  border-left: 3px solid rgba(77, 208, 225, 0.55);
+  color: #a8c2cf;
+}
+.hiwarp-ai-markdown a { color: #4dd0e1; }
+.hiwarp-ai-markdown hr { border: 0; border-top: 1px solid rgba(165, 219, 225, 0.22); margin: 0.65rem 0; }
+.hiwarp-ai-markdown table { border-collapse: collapse; margin: 0.45rem 0; font-size: 0.9em; }
+.hiwarp-ai-markdown th, .hiwarp-ai-markdown td { border: 1px solid rgba(165, 219, 225, 0.25); padding: 0.26rem 0.5rem; }
+.hiwarp-ai-markdown th { background: rgba(8, 21, 29, 0.45); }
+.hiwarp-ai-markdown img { max-width: 100%; }
+`;
 const speakButtonStyle = {
   ...subtleButtonStyle,
   minHeight: '1.55rem',
@@ -1558,6 +1637,7 @@ class AIChatSidebar extends React.Component {
     if (!service || !config) return null;
     const selection = this.state.customSelection;
     return <React.Fragment>
+      <style>{markdownStyles}</style>
       {!this.state.open && <DockableTab tabKey="ai" label="AI 助手" side="right" onOpen={() => this.setState({open: true})} />}
       {this.state.open && <aside style={drawerStyle}>
         <header style={headerStyle}>
@@ -1624,7 +1704,13 @@ class AIChatSidebar extends React.Component {
               onClick={() => this.toggleSpeakMessage(messageId, message.content)}
             >{isSpeaking ? '停止' : '朗读'}</button>}
           </div>
-          <div style={messageTextStyle}>{message.content}</div>
+          {message.role === 'user'
+            ? <div style={messageTextStyle}>{message.content}</div>
+            : <div
+              className="hiwarp-ai-markdown"
+              style={markdownContainerStyle}
+              dangerouslySetInnerHTML={{__html: renderAssistantMarkdown(message.content)}}
+            />}
           {message.error && <div style={{color: '#ff8a80'}}>{message.error}</div>}
           {message.operationResult && <div style={{color: message.operationResult.ok === false ? '#ff8a80' : '#9be7a1'}}>
             {message.operationResult.ok === false

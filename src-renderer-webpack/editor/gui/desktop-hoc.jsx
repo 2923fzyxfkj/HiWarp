@@ -165,7 +165,12 @@ const DesktopHOC = function (WrappedComponent) {
       })().catch(error => {
         console.error(error);
 
-        this.props.onShowErrorModal(error);
+        // HiWarp: 启动时若初始文件不是合法项目（典型是 JSON 解析失败抛出的 SyntaxError），
+        // 静默新建空白项目即可，不再弹「项目无法加载」窗口——否则每次启动都会被打断。
+        // 其余加载错误仍然提示，避免掩盖真实故障。
+        if (!(error && error.name === 'SyntaxError')) {
+          this.props.onShowErrorModal(error);
+        }
         this.props.onLoadingCompleted();
         this.props.onLoadedProject(this.props.loadingState, false);
         this.props.onHasInitialProject(false, this.props.loadingState);

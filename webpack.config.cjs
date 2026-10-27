@@ -51,6 +51,13 @@ const base = {
                         }
                     }
                 ]
+            },
+            {
+                // webpack 4 把 .mjs 当严格 ESM，禁止 CommonJS 互操作，会报
+                // "Can't import the named export ... from non EcmaScript module"。
+                // markdown-it v14 是纯 ESM 包（.mjs），降级为 javascript/auto 才能解析其具名导出。
+                test: /\.mjs$/,
+                type: 'javascript/auto'
             }
         ]
     }
