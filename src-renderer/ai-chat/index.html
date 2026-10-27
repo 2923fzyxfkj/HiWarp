@@ -97,6 +97,53 @@
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
+    /* AI 消息的 Markdown 渲染（与编辑器侧栏同一套结构，尺寸用 em 跟随窗口字体） */
+    .messageMarkdown { overflow-wrap: anywhere; }
+    .messageMarkdown > :first-child { margin-top: 0; }
+    .messageMarkdown > :last-child { margin-bottom: 0; }
+    .messageMarkdown p { margin: .4em 0; }
+    .messageMarkdown h1, .messageMarkdown h2, .messageMarkdown h3,
+    .messageMarkdown h4, .messageMarkdown h5, .messageMarkdown h6 {
+      margin: .7em 0 .35em;
+      line-height: 1.3;
+    }
+    .messageMarkdown h1 { font-size: 1.25em; }
+    .messageMarkdown h2 { font-size: 1.15em; }
+    .messageMarkdown h3 { font-size: 1.05em; }
+    .messageMarkdown h4, .messageMarkdown h5, .messageMarkdown h6 { font-size: 1em; }
+    .messageMarkdown ul, .messageMarkdown ol { margin: .4em 0; padding-left: 1.4em; }
+    .messageMarkdown li { margin: .18em 0; }
+    .messageMarkdown li > p { margin: 0; }
+    .messageMarkdown code {
+      background: rgba(8, 21, 29, .62);
+      padding: .1em .36em;
+      border-radius: .35em;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: .9em;
+    }
+    .messageMarkdown pre {
+      margin: .5em 0;
+      padding: .65em .8em;
+      border-radius: .6em;
+      background: rgba(8, 21, 29, .72);
+      overflow-x: auto;
+    }
+    .messageMarkdown pre code { background: none; padding: 0; font-size: .86em; line-height: 1.5; }
+    .messageMarkdown blockquote {
+      margin: .5em 0;
+      padding: .1em 0 .1em .75em;
+      border-left: 3px solid rgba(77, 208, 225, .55);
+      color: #a8c2cf;
+    }
+    .messageMarkdown a { color: #4dd0e1; }
+    .messageMarkdown hr { border: 0; border-top: 1px solid rgba(165, 219, 225, .22); margin: .7em 0; }
+    .messageMarkdown table { border-collapse: collapse; margin: .5em 0; font-size: .95em; }
+    .messageMarkdown th, .messageMarkdown td {
+      border: 1px solid rgba(165, 219, 225, .25);
+      padding: .28em .55em;
+    }
+    .messageMarkdown th { background: rgba(8, 21, 29, .45); }
+    .messageMarkdown img { max-width: 100%; }
     .speakMessage {
       min-height: 24px;
       padding: 3px 9px;
@@ -186,8 +233,51 @@
   </section>
   <main id="messages"></main>
   <footer><div id="composer"><textarea id="text" placeholder="描述要实现的 Scratch 功能" rows="3"></textarea><button id="voice">语音</button><button id="send">发送</button></div></footer>
+  <script src="vendor/markdown-it.min.js"></script>
+  <script src="vendor/purify.min.js"></script>
   <script>
     const api = window.AIChatPreload;
+    // ---- Markdown 渲染（与编辑器侧栏同一套引擎：markdown-it + DOMPurify） ----
+    // 两个库是本地 vendor 文件，不走网络；加载失败时下面会回退成纯文本。
+    const markdownRenderer = window.markdownit ? window.markdownit({
+      html: false,
+      linkify: true,
+      breaks: true
+    }) : null;
+    if (markdownRenderer) {
+      // 链接交给主进程用系统浏览器打开（AbstractWindow.handleWindowOpen 已拦截）
+      const defaultLinkOpen = markdownRenderer.renderer.rules.link_open ||
+        ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
+      markdownRenderer.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+        tokens[idx].attrSet('target', '_blank');
+        tokens[idx].attrSet('rel', 'noreferrer noopener');
+        return defaultLinkOpen(tokens, idx, options, env, self);
+      };
+    }
+    // 流式回复会不断产生新的中间态文本，用带上限的缓存避免反复解析
+    const MARKDOWN_CACHE_LIMIT = 200;
+    const markdownCache = new Map();
+    // DOMPurify 的 UMD 在没有 window 时导出的是工厂函数，这里要求它真的是
+    // 带 sanitize 的实例，否则宁可不渲染也不能把消息弄成空白。
+    const sanitizer = window.DOMPurify && typeof window.DOMPurify.sanitize === 'function'
+      ? window.DOMPurify
+      : null;
+    const renderMarkdown = content => {
+      if (!markdownRenderer || !sanitizer) {
+        return null;
+      }
+      const source = typeof content === 'string' ? content : String(content == null ? '' : content);
+      const cached = markdownCache.get(source);
+      if (cached !== undefined) {
+        return cached;
+      }
+      const html = sanitizer.sanitize(markdownRenderer.render(source));
+      if (markdownCache.size >= MARKDOWN_CACHE_LIMIT) {
+        markdownCache.clear();
+      }
+      markdownCache.set(source, html);
+      return html;
+    };
     const controls = {
       freeDeepSeek: document.querySelector('#freeDeepSeek'),
       freeDeepSeekPython: document.querySelector('#freeDeepSeekPython'),
@@ -392,8 +482,21 @@
           header.appendChild(speakButton);
         }
         const content = document.createElement('div');
-        content.className = 'messageText';
-        content.textContent = message.content;
+        if (message.role === 'user') {
+          // 用户消息保持纯文本，与编辑器侧栏的做法一致
+          content.className = 'messageText';
+          content.textContent = message.content;
+        } else {
+          const markdownHtml = renderMarkdown(message.content);
+          if (markdownHtml === null) {
+            // vendor 库没加载起来时退回纯文本，不能把消息显示成空白
+            content.className = 'messageText';
+            content.textContent = message.content;
+          } else {
+            content.className = 'messageMarkdown';
+            content.innerHTML = markdownHtml;
+          }
+        }
         item.appendChild(header);
         item.appendChild(content);
         if (message.error) {

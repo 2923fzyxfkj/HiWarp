@@ -326,6 +326,27 @@ AI 回复
 | `ai:editor-response` | 编辑器 → 主 | 回传操作结果/错误 |
 | `ai:state` | 主 → 所有视图 | 广播状态变化 |
 
+### 3.1.10 消息渲染（Markdown）
+
+AI 回复按 Markdown 渲染，用户消息保持纯文本。两处界面用的是**同一个引擎**，但接入方式不同：
+
+| 界面 | 实现 | 依赖来源 |
+| --- | --- | --- |
+| 侧栏 `ai-sidebar.jsx` | `import MarkdownIt from 'markdown-it'` + `DOMPurify`，产物里内联 | **未在 `package.json` 声明**，靠 `@turbowarp/extensions` / `@turbowarp/scratch-svg-renderer` 传递带入 |
+| 独立窗口 `src-renderer/ai-chat/index.html` | `<script src="vendor/markdown-it.min.js">` + `vendor/purify.min.js`（UMD） | 仓库内 vendor 副本，见 `src-renderer/ai-chat/vendor/README.md` |
+
+共同约束：
+
+- `markdown-it` 配置 `html:false, linkify:true, breaks:true`，输出再经 `DOMPurify.sanitize()`，双重防注入
+- 链接加 `target="_blank"`，由 `AbstractWindow.handleWindowOpen` 转交系统浏览器打开
+- 流式回复会不断产生中间态文本，两处都用带上限（200 条）的缓存避免重复解析
+- 独立窗口在 vendor 库加载失败时自动回退纯文本（`renderMarkdown()` 返回 `null` 时走 `textContent`）
+- `tw-ai-chat` 必须注册为 **standard scheme**（`standard: true, secure: true`），并且 CSP 写成 `script-src 'self' tw-ai-chat: 'unsafe-inline'`。**只加 `'self'` 不够**：非 standard 协议的源是不透明源，`'self'` 永远匹配不上，vendor 脚本会被静默拦截，页面只剩回退的纯文本，且只在主进程日志里留下一行 `violates ... script-src 'self'`
+
+已知限制：CSP 的 `default-src 'none'` 未放开 `img-src`，所以 Markdown 图片不会显示（侧栏同理）。
+
+自测：`node src-renderer/ai-chat/markdown-vendor.test.mjs`
+
 ## 3.2 免费 DeepSeek
 
 ### 3.2.1 设计目标
@@ -867,6 +888,17 @@ node SpeedScript/add-copyright.js
 
 > 现在补丁源文件已纳入 `patches/`，`npm ci` 后应先跑 `node patches/apply.mjs` 再跑本脚本。
 
+## 5.2.1 随包分发的第三方库
+
+独立 AI 聊天窗口是静态页面，无法 `import` node_modules，因此两份浏览器版库被**原样复制**进仓库（见 `src-renderer/ai-chat/vendor/README.md`）：
+
+| 文件 | 版本 | 许可证 | 义务 |
+| --- | --- | --- | --- |
+| `vendor/markdown-it.min.js` | 14.1.0 | MIT | 保留文件头许可证声明 |
+| `vendor/purify.min.js` | 3.4.5 | MPL-2.0 OR Apache-2.0 | 保留文件头许可证声明 |
+
+两份文件均未修改；升级时按 `vendor/README.md` 的步骤重新复制并更新版本号。
+
 ## 5.3 发布前检查
 
 - [ ] `LICENSE` 存在且未被替换为其它许可
@@ -932,6 +964,7 @@ node SpeedScript/add-copyright.js
 | `src-renderer-webpack/editor/scratch-text/scratch-text.js` | .sp 语言核心 |
 | `src-renderer-webpack/editor/scratch-text/sidebar.jsx` | .sp 面板 |
 | `src-renderer-webpack/editor/addons/hiwarp-addon-defaults.js` | 加载项默认启用表（见 3.6.1）；`npm ci` 不会影响它 |
+| `src-renderer/ai-chat/vendor/` | 独立 AI 窗口用的 Markdown 依赖（UMD 副本，见 3.1.10 / 5.2.1） |
 | `patches/apply.mjs` | node_modules 补丁应用脚本 |
 | `patches/scratch-gui/`、`patches/scratch-vm/` | 受版本控制的依赖补丁源 |
 | `SpeedScript/compile.bat` | Windows + WSL 全平台打包脚本 |
@@ -967,6 +1000,7 @@ npm run electron:start                # 启动应用
 node SpeedScript/add-copyright.js     # 恢复版权声明
 node src-renderer-webpack/editor/gui/todo-store.test.mjs   # 待办数据层测试
 node src-renderer-webpack/editor/addons/hiwarp-addon-defaults.test.mjs   # 加载项默认值测试
+node src-renderer/ai-chat/markdown-vendor.test.mjs   # 独立 AI 窗口的 Markdown 接线自测
 SpeedScript\compile.bat <version>     # 全平台打包（Windows + WSL Linux）
 SpeedScript\build-web.bat <version>   # 构建 Web 版
 ```

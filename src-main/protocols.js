@@ -84,7 +84,13 @@ const FILE_SCHEMES = {
   },
   'tw-ai-chat': {
     root: path.resolve(__dirname, '../src-renderer/ai-chat'),
-    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src *"
+    // 必须是 standard scheme：该窗口要加载 vendor/ 下的 markdown-it.min.js 与
+    // purify.min.js。非 standard 的协议是不透明源，CSP 里的 'self' 永远匹配不上，
+    // 脚本会被静默拦掉（日志里表现为 "violates ... script-src 'self'"）。
+    standard: true,
+    secure: true,
+    // 除 'self' 外再显式列出 scheme 源，双保险：任一匹配即可放行。
+    csp: "default-src 'none'; style-src 'unsafe-inline'; script-src 'self' tw-ai-chat: 'unsafe-inline'; connect-src *"
   }
 };
 
