@@ -641,7 +641,7 @@ node src-renderer-webpack/editor/gui/todo-store.test.mjs
 
 `patches/` 中与扩展相关的部分包括：
 
-- `patches/scratch-gui/src/lib/libraries/extensions/hidream/*`（隐藏扩展入口与图标）
+- `patches/scratch-gui/src/lib/libraries/extensions/hidream/*`（6 个扩展的图标 png 与源码副本）；**面板条目默认不注册**——需要时用 `extracted/02engine-extensions/`（条目定义 `entries.jsx` + 图标 + 源码 + README）。`extensionURL` 必须与 `tw-default-extension-urls.js` 的映射逐字一致，否则同一扩展会被当成两个 id 加载两遍
 - `patches/scratch-vm/src/extensions/*`（`file_plus`、`image_processor`、`netease_music`、`webgl_liquid_glass_v4`、`cyberexplorer_toolbox_mini`、`hidream_puw`）
 - `patches/scratch-gui/static/extensions/ExtFind.js`、`patches/scratch-gui/static/penguinmod/extensions.js`
 - CCW 扩展弹窗与扩展导入弹窗（`tw-ccw-extension-modal`、`tw-extension-import-modal`）
@@ -743,8 +743,8 @@ AI 助手另有两项语音相关能力：回复「朗读」使用渲染层的 `
 | 部分 | 位置 | 职责 |
 | --- | --- | --- |
 | 取数脚本 | `scripts/prepare-material-symbols.mjs` | 从依赖复制 SVG 到 `dist-library-files/material-symbols/`，生成 `index.json` 与 `LICENSE` |
-| 协议 | `tw-library://`（已有） | 按文件返回 SVG / JSON，`cors: true`，支持子目录 |
-| 逻辑模块 | `patches/scratch-gui/src/lib/hiwarp-material-symbols.js` | 清单加载、条目构建、SVG 尺寸重写、插入角色 |
+| 协议 | `tw-library://`（已有） | 按文件返回 JSON / SVG，`cors: true`，支持子目录 |
+| 逻辑模块 | `patches/scratch-gui/src/lib/hiwarp-material-symbols.js` | 清单/归档加载、条目构建（惰性 `rawURL`）、SVG 尺寸归一、插入角色 |
 | 标签 | `patches/scratch-gui/src/lib/libraries/sprite-tags.js` | 追加三个标签（文案内联，不改 l10n 词条） |
 | 容器 | `patches/scratch-gui/src/containers/sprite-library.jsx` | 把图标条目并入 `data`、处理填充切换与选中插入 |
 | 库组件 | `patches/scratch-gui/src/components/library/library.jsx` | 筛选栏扩展控件槽位、分批渲染、`hiddenInAllTag` |
@@ -760,9 +760,11 @@ AI 助手另有两项语音相关能力：回复「朗读」使用渲染层的 `
 
 ### 3.11.3 性能处理
 
+- **图标按风格归档，不铺散文件**：`dist-library-files/material-symbols` 只有 5 个文件（`outlined/rounded/sharp.json` + `index.json` + `LICENSE`）。早期版本是 23,622 个独立 `.svg`，12.7 MB 数据配 23,622 个 inode，导致 electron-builder 每次封装、WSL 每次 rsync 都退化成 inode 操作——归档后构建时间与图标数量脱钩。
+- **归档惰性加载**：`<style>.json` 每个 4~6 MB，容器挂载后逐个加载，每完成一个就重建条目；条目的 `rawURL` 是**惰性 getter**，归档未就绪时返回透明占位图，就绪后自动变成 `data:image/svg+xml` 缩略图，避免打开面板时一次性解析十几 MB。
 - 每套 3,937 条，库组件默认**分批渲染 400 条**（`RENDER_BATCH`），超出显示「加载更多」按钮；切换标签或搜索词时自动回到首批。
-- 图标清单（`index.json`）只取一次并缓存在容器实例上，不进 React state。
-- 实心是同一目录下的 `<name>-fill.svg`，切换填充只重建条目的 URL 字符串，不重新请求清单。
+- 图标名称清单（`index.json`，约 177 KB）只取一次并缓存在容器实例上，不进 React state。
+- 实心是归档里的 `<name>-fill` 键，切换填充只重建条目（重新挂 getter 闭包），不重新请求归档。
 
 ### 3.11.4 插入行为
 
@@ -855,12 +857,14 @@ npx electron-builder --win nsis portable --x64 --config electron-builder.hiwarp-
 3. 仓库路径转 WSL 路径，探测 WSL 用户并确定构建目录（`~/hiwarp-build`）
 4. 用 PowerShell 基于模板生成带版本号的临时 electron-builder 配置
 5. `npm run webpack:prod`
-6. 构建 Windows 产物（nsis + portable）
+6. 构建 Windows 产物（nsis + portable）——electron-builder 在同一平台内**只生成一次 app 目录/asar**，两个 target 各自封装
 7. `rsync` 同步源码到 WSL 内文件系统（排除 `node_modules`、`.git`、`dist` 等）——**必须在 ext4 内构建，扫描 `/mnt/c` 上的 `node_modules` 极慢**
 8. 首次同步 `node_modules`（之后复用缓存）
-9. 在 WSL 内执行 electron-builder 生成 `deb`、`AppImage`、`tar.gz`
+9. 在 WSL 内执行 electron-builder 生成 `deb`、`AppImage`、`tar.gz`（同样只打包一次 app 目录）
 10. 把 Linux 产物按统一命名复制回 Windows `dist/`
 11. 清理临时配置与中间目录
+
+脚本在每个阶段的边界打印 `[时间] ... %TIME%`，跑一次即可拿到各阶段真实耗时（`[1/4]`、`[2/4]`、`[3/4.1]`、`[3/4.3]`、`[4/4]`）。
 
 镜像加速：脚本设置 `ELECTRON_MIRROR` 与 `ELECTRON_BUILDER_BINARIES_MIRROR` 指向 npmmirror。
 

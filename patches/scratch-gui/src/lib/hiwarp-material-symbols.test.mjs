@@ -5,7 +5,7 @@
  *
  * 为什么要拷到临时目录：package.json 没有 "type": "module"，node 会把 .js
  * 当 CommonJS 解析，直接 import 会报 "Unexpected token 'export'"。
- * 只测纯逻辑（条目构建 / SVG 尺寸重写），不联网、不碰 VM。
+ * 只测纯逻辑（条目构建 / SVG 尺寸归一 / data URL / helper 约定），不联网、不碰 VM。
  */
 import fs from 'node:fs';
 import os from 'node:os';
@@ -22,6 +22,7 @@ const {
     MATERIAL_SYMBOL_FILL_SUFFIX,
     MATERIAL_SYMBOL_STAGE_SIZE,
     buildMaterialSymbolItems,
+    svgToDataUrl,
     registerIconAsset,
     resizeMaterialSymbolSvg
 } = await import(pathToFileURL(temp).href);
@@ -53,6 +54,7 @@ console.log('=== 1. 风格定义 ===');
         MATERIAL_SYMBOL_STYLES.every(({style, tag}) => tag === `material-symbols-${style}`));
     ok('标签唯一', new Set(MATERIAL_SYMBOL_STYLES.map(s => s.tag)).size === 3);
     ok('每个标签都有文案', MATERIAL_SYMBOL_STYLES.every(s => typeof s.label === 'string' && s.label.length > 0));
+    ok('标签文案足够短（避免挤爆标签栏）', MATERIAL_SYMBOL_STYLES.every(s => s.label.length <= 4));
     ok('实心后缀是 -fill', MATERIAL_SYMBOL_FILL_SUFFIX === '-fill');
     ok('插入尺寸大于原始 24px', MATERIAL_SYMBOL_STAGE_SIZE > 24);
 }
@@ -62,27 +64,27 @@ console.log('=== 2. 条目构建（描边） ===');
     const items = buildMaterialSymbolItems(fakeIndex, false);
     ok('数量 = 三个风格下的图标总和', items.length === 4);
     const home = items.find(i => i.hiwarpIcon.style === 'outlined' && i.hiwarpIcon.name === 'home');
-    ok('rawURL 指向 tw-library 且不带填充后缀',
-        home.rawURL === 'tw-library://./material-symbols/outlined/home.svg');
     ok('tags 只有对应风格标签', home.tags.length === 1 && home.tags[0] === 'material-symbols-outlined');
     ok('不会混进「所有」列表', home.hiddenInAllTag === true);
     ok('name 就是图标名（可直接搜索）', home.name === 'home');
+    ok('带 fill 标记', home.hiwarpIcon.fill === false);
     ok('key 唯一', new Set(items.map(i => i.key)).size === items.length);
+    // 归档未加载时 rawURL 是透明占位图，不是裂图链接
+    ok('未加载归档时 rawURL 是 data URL 占位', home.rawURL.startsWith('data:image/svg+xml'));
 }
 
 console.log('=== 3. 条目构建（实心） ===');
 {
     const items = buildMaterialSymbolItems(fakeIndex, true);
     const home = items.find(i => i.hiwarpIcon.style === 'rounded' && i.hiwarpIcon.name === 'home');
-    ok('rawURL 带 -fill 后缀',
-        home.rawURL === 'tw-library://./material-symbols/rounded/home-fill.svg');
-    ok('key 也区分填充', home.key.indexOf('-fill') !== -1);
+    ok('fill 标记为 true', home.hiwarpIcon.fill === true);
+    ok('key 区分填充', home.key.indexOf('-fill') !== -1);
 }
 
 console.log('=== 4. 清单缺失/异常 ===');
 {
     ok('没有 icons 字段时返回空数组', buildMaterialSymbolItems({}, false).length === 0);
-    ok('null 不抛异常', (() => {
+    ok('icons 为 null 不抛异常', (() => {
         try {
             buildMaterialSymbolItems({icons: null}, false);
             return true;
@@ -95,7 +97,6 @@ console.log('=== 4. 清单缺失/异常 ===');
 
 console.log('=== 5. SVG 尺寸重写与坐标归一 ===');
 {
-    // Material Symbols 的真实结构：viewBox 原点在负 Y
     const src = '<svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48"><path d="M1 2"/></svg>';
     const out = resizeMaterialSymbolSvg(src, 100);
     ok('写入目标尺寸', out.indexOf('width="100"') !== -1 && out.indexOf('height="100"') !== -1);
@@ -105,7 +106,6 @@ console.log('=== 5. SVG 尺寸重写与坐标归一 ===');
     ok('路径内容不变', out.indexOf('<path d="M1 2"/>') !== -1);
     ok('结构闭合正确', out.trim().endsWith('</g></svg>'));
 
-    // 已经是 0 原点的 SVG 不需要平移
     const plain = '<svg width="24" height="24" viewBox="0 0 24 24"><rect width="10" height="10"/></svg>';
     const plainOut = resizeMaterialSymbolSvg(plain, 100);
     ok('0 原点的 SVG 不加平移', plainOut.indexOf('<g transform') === -1);
@@ -117,7 +117,17 @@ console.log('=== 5. SVG 尺寸重写与坐标归一 ===');
     ok('非 SVG 文本原样返回', resizeMaterialSymbolSvg('not svg', 100) === 'not svg');
 }
 
-console.log('=== 6. storage helper：本地图标资源命中 ===');
+console.log('=== 6. data URL 转换 ===');
+{
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M1 2"/></svg>';
+    const url = svgToDataUrl(svg);
+    const prefix = 'data:image/svg+xml;charset=utf-8,';
+    ok('前缀正确', url.indexOf(prefix) === 0);
+    ok('内容被编码（尖括号不裸露）', url.indexOf('<svg') === -1);
+    ok('可被 decodeURIComponent 还原', decodeURIComponent(url.slice(prefix.length)) === svg);
+}
+
+console.log('=== 7. storage helper：本地图标资源命中 ===');
 {
     const helpers = [];
     const fakeStorage = {
@@ -159,4 +169,3 @@ console.log(`\n通过 ${pass}，失败 ${fail}`);
 if (fail > 0) {
     process.exit(1);
 }
-

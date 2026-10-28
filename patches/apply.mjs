@@ -531,6 +531,15 @@ import {activateTab, BLOCKS_TAB_INDEX} from '../reducers/editor-tab';
 
     // Extract any custom fonts before loading costumes.
 `
+},
+{
+    file: 'scratch-gui/src/lib/themes/index.js',
+    why: 'HiWarp: 默认主题色改成蓝色（上游 TurboWarp 默认是红色，清掉 localStorage 就会露出红色）',
+    marker: 'const ACCENT_DEFAULT = ACCENT_BLUE',
+    find: `const ACCENT_DEFAULT = ACCENT_RED;
+`,
+    replace: `const ACCENT_DEFAULT = ACCENT_BLUE;
+`
 }
 ];
 

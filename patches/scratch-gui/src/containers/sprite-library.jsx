@@ -12,7 +12,8 @@ import {
     MATERIAL_SYMBOL_FILL_SUFFIX,
     buildMaterialSymbolItems,
     insertMaterialSymbol,
-    loadMaterialSymbolsIndex
+    loadMaterialSymbolsIndex,
+    loadMaterialSymbolsStyle
 } from '../lib/hiwarp-material-symbols.js';
 
 import LibraryComponent from '../components/library/library.jsx';
@@ -76,12 +77,31 @@ class SpriteLibrary extends React.PureComponent {
                 this.setState({
                     iconItems: buildMaterialSymbolItems(index, this.state.fill)
                 });
+                this.prefetchMaterialSymbolStyles();
             })
             .catch(error => {
                 // 素材没生成时不能静默：否则表现成"选项卡点进去是空的"
                 // eslint-disable-next-line no-console
                 console.error('[HiWarp] Material Symbols 未能加载:', error);
             });
+    }
+    prefetchMaterialSymbolStyles () {
+        // 图标归档每个风格 4~6 MB，逐个加载，每完成一个就重建条目
+        // （条目里的 rawURL 是惰性 getter，重建后缩略图才会从占位图变成真图标）
+        const rebuild = () => {
+            if (!this.materialSymbolsIndex) return;
+            this.setState({
+                iconItems: buildMaterialSymbolItems(this.materialSymbolsIndex, this.state.fill)
+            });
+        };
+        MATERIAL_SYMBOL_STYLES.reduce((chain, {style}) => chain.then(() =>
+            loadMaterialSymbolsStyle(style)
+                .then(rebuild)
+                .catch(error => {
+                    // eslint-disable-next-line no-console
+                    console.error(`[HiWarp] Material Symbols 图标归档加载失败（${style}）:`, error);
+                })
+        ), Promise.resolve());
     }
     handleFillChange (event) {
         const fill = event.currentTarget.value === MATERIAL_SYMBOL_FILL_SUFFIX;

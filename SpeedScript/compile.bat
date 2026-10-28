@@ -112,21 +112,26 @@ set "ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-bui
 
 rem ---- 1/4 编译 webpack 产物 ----
 echo [1/4] 编译 webpack 产物...
+echo [时间] [1/4] webpack:prod 开始 %TIME%
 call npm run webpack:prod
 if errorlevel 1 goto :error
+echo [时间] [1/4] webpack:prod 结束 %TIME%
 
 rem ---- 2/4 构建 Windows 包 ----
 echo [2/4] 构建 Windows 安装包 (nsis + portable)...
+echo [时间] [2/4] Windows 打包 开始 %TIME%
 call npx electron-builder --win nsis portable --x64 --config electron-builder.hiwarp-win.tmp.cjs --publish never
 if errorlevel 1 goto :error
+echo [时间] [2/4] Windows 打包 结束 %TIME%
 
 rem ---- 3/4 通过 WSL 构建 Linux 包 ----
 echo [3/4] 通过 WSL 构建 Linux 包 (deb + AppImage + tar.gz)...
 echo  WSL 构建目录: %WSL_BUILD%
 
 rem 3.1 同步源码到 WSL 内部文件系统 (ext4, 避免 /mnt/c 扫描缓慢)
-echo  [3/4.1] 同步源码到 WSL...
-wsl bash -lc "mkdir -p '%WSL_BUILD%' && rsync -a --delete --exclude node_modules --exclude .git --exclude dist --exclude dist-web --exclude SpeedScript --exclude webpack-out.txt '%WSL_PATH%/' '%WSL_BUILD%/' && rsync -a --delete '%WSL_PATH%/dist-renderer-webpack/' '%WSL_BUILD%/dist-renderer-webpack/'"
+echo  [3/4.1] 同步源码到 WSL... [开始 %TIME%]
+wsl bash -lc "mkdir -p '%WSL_BUILD%' && rsync -a --delete --exclude node_modules --exclude .git --exclude dist --exclude dist-web --exclude SpeedScript --exclude webpack-out.txt '%WSL_PATH%/' '%WSL_BUILD%/'"
+echo [时间] [3/4.1] 同步源码 结束 %TIME%
 if errorlevel 1 goto :error
 
 rem 3.2 检查 WSL 构建目录中的 node_modules, 首次从 Windows 同步 (之后缓存复用)
@@ -141,12 +146,13 @@ if "%WSL_STATE%"=="NEED" (
 )
 
 rem 3.3 在 WSL 内执行 electron-builder
-echo  [3/4.3] WSL 内执行 electron-builder...
+echo  [3/4.3] WSL 内执行 electron-builder... [开始 %TIME%]
 wsl bash -lc "export HOME=$(dirname '%WSL_BUILD%'); cd '%WSL_BUILD%' && ELECTRON_MIRROR=%ELECTRON_MIRROR% ELECTRON_BUILDER_BINARIES_MIRROR=%ELECTRON_BUILDER_BINARIES_MIRROR% npx electron-builder --linux deb AppImage tar.gz --x64 --config electron-builder.hiwarp-linux.tmp.cjs --publish never"
 if errorlevel 1 goto :error
 
 rem ---- 4/4 整理 Linux 产物并复制回 Windows ----
-echo [4/4] 整理 Linux 产物并复制回 Windows...
+echo [时间] [3/4.3] WSL 打包 结束 %TIME%
+echo [4/4] 整理 Linux 产物并复制回 Windows... [开始 %TIME%]
 if "%PRE%"=="" (
     wsl bash -lc "cd '%WSL_BUILD%/dist' && cp 'HiWarp Linux-%CORE%-x86_64.AppImage' '%WSL_PATH%/dist/HiWarp Linux-%CORE%-AppImage x64.AppImage' && cp 'HiWarp Linux-%CORE%-amd64.deb' '%WSL_PATH%/dist/HiWarp Linux-%CORE%-deb amd64.deb' && cp 'HiWarp Linux-%CORE%-x64.tar.gz' '%WSL_PATH%/dist/HiWarp Linux-%CORE%-tar.gz x64.tar.gz'"
 ) else (
@@ -154,6 +160,7 @@ if "%PRE%"=="" (
 )
 if errorlevel 1 (
     echo [警告] Linux 产物复制失败, 请检查 %WSL_BUILD%/dist 中的实际文件名。
+echo [时间] [4/4] 复制产物 结束 %TIME%
 )
 
 rem ---- 清理 Windows 侧中间产物 ----

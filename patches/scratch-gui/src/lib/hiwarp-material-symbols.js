@@ -1,38 +1,50 @@
 /**
  * HiWarp: 角色库的 Material Symbols 支持。
  *
- * 数据来源：dist-library-files/material-symbols/（由 scripts/prepare-material-symbols.mjs
- * 从 @material-symbols/svg-400 生成），通过 tw-library:// 协议按文件读取。
+ * 数据来源：dist-library-files/material-symbols/
+ *   - index.json    图标名清单（每个风格一份基础名）
+ *   - <style>.json  图标归档 { "<name>": "<svg>", "<name>-fill": "<svg>" }
+ *   由 scripts/prepare-material-symbols.mjs 从 @material-symbols/svg-400 生成。
  *
- * 为什么不走常规的 assetId/md5ext 路径：
- *   上游 library-item.jsx 把缩略图写死成 https://cdn.assets.scratch.mit.edu/...，
- *   我们的图标不在 Scratch 素材服务器上。所以条目只提供 rawURL（本地协议），
- *   插入时再把 SVG 变成真实 asset 交给 VM（deserialize-assets.js 支持内联 asset）。
+ * 为什么是归档而不是每个图标一个文件：
+ *   23,622 个散文件会让 electron-builder 每次封装、WSL 每次 rsync 都退化成
+ *   inode 操作。归档后只有 5 个文件，构建时间与图标数量脱钩。
+ *
+ * 为什么缩略图用 data URL：
+ *   上游 library-item.jsx 把缩略图写死成 Scratch CDN 的 md5 路径，我们的图标
+ *   不在那儿。条目只提供 rawURL（这里是 data URL），iconMd5 留空即可。
  */
 const LIBRARY_BASE = 'tw-library://./material-symbols';
 
 /** 三个风格的标签定义，tag 会成为角色库顶部的一个筛选按钮 */
-// 标签文案刻意用短名：三个全名（"Material Symbols 轮廓" 等）会把标签栏挤到
-// 折行后被裁掉，或被迫出现横向滚动条。来源与许可证见 docs/TECHNICAL.md §3.11。
+// 标签文案刻意用短名：三个全名会把标签栏挤到折行后被裁掉。
 export const MATERIAL_SYMBOL_STYLES = [
     {style: 'outlined', tag: 'material-symbols-outlined', label: '轮廓'},
     {style: 'rounded', tag: 'material-symbols-rounded', label: '圆角'},
     {style: 'sharp', tag: 'material-symbols-sharp', label: '尖锐'}
 ];
 
-/** 实心变体是同一目录下的 `<name>-fill.svg` */
+/** 实心变体在归档里的键后缀 */
 export const MATERIAL_SYMBOL_FILL_SUFFIX = '-fill';
 
 /**
- * 插入时的舞台尺寸。Material Symbols 原始 viewBox 是 24×24，
- * 直接作为造型只有 24 个舞台单位，几乎看不见，所以统一放大。
+ * 插入时的舞台尺寸。Material Symbols 原始 viewBox 是 960×960（原点在负 Y），
+ * 直接作为造型会落在框外，这里统一归一化并放大。
  */
 export const MATERIAL_SYMBOL_STAGE_SIZE = 100;
+
+/** 归档还没加载完时用的透明占位图，避免 <img> 出现裂图 */
+const TRANSPARENT_ICON = 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 960 960%22/%3E';
+
+/** style -> { name: svg } */
+const styleArchives = new Map();
+/** style -> Promise（避免重复请求） */
+const stylePromises = new Map();
 
 let indexPromise = null;
 
 /**
- * 读取图标清单（只请求一次，之后复用）。
+ * 读取图标名清单（只请求一次）。
  * @returns {Promise<{styles: string[], icons: Record<string, string[]>, counts: object}>}
  */
 export const loadMaterialSymbolsIndex = () => {
@@ -45,7 +57,6 @@ export const loadMaterialSymbolsIndex = () => {
                 return response.json();
             })
             .catch(error => {
-                // 失败时清掉缓存，下次打开库还能重试
                 indexPromise = null;
                 throw error;
             });
@@ -53,10 +64,64 @@ export const loadMaterialSymbolsIndex = () => {
     return indexPromise;
 };
 
-const buildIconFile = (name, fill) => `${name}${fill ? MATERIAL_SYMBOL_FILL_SUFFIX : ''}.svg`;
+/**
+ * 读取某个风格的图标归档（约 4~6 MB，只请求一次）。
+ * @param {string} style outlined / rounded / sharp
+ * @returns {Promise<Record<string, string>>}
+ */
+export const loadMaterialSymbolsStyle = style => {
+    if (styleArchives.has(style)) {
+        return Promise.resolve(styleArchives.get(style));
+    }
+    if (stylePromises.has(style)) {
+        return stylePromises.get(style);
+    }
+    const promise = fetch(`${LIBRARY_BASE}/${style}.json`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Material Symbols 图标归档读取失败（${style}）: HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(archive => {
+            styleArchives.set(style, archive);
+            stylePromises.delete(style);
+            return archive;
+        })
+        .catch(error => {
+            stylePromises.delete(style);
+            throw error;
+        });
+    stylePromises.set(style, promise);
+    return promise;
+};
+
+/** 该风格的归档是否已就绪（用于决定要不要重建条目） */
+export const isMaterialSymbolsStyleLoaded = style => styleArchives.has(style);
+
+/** 归档里的键：实心是 <name>-fill */
+const archiveKey = (name, fill) => `${name}${fill ? MATERIAL_SYMBOL_FILL_SUFFIX : ''}`;
+
+/**
+ * 取某个图标的 SVG 源码；归档未加载时返回 null。
+ * @returns {string|null}
+ */
+export const getMaterialSymbolSvg = (style, name, fill) => {
+    const archive = styleArchives.get(style);
+    if (!archive) return null;
+    const svg = archive[archiveKey(name, fill)];
+    return typeof svg === 'string' ? svg : null;
+};
+
+/** SVG 源码 -> 可直接放进 <img src> 的 data URL */
+export const svgToDataUrl = svg => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 /**
  * 把清单摊平成角色库条目。
+ *
+ * rawURL 是**惰性 getter**：归档没加载完时返回透明占位图，加载完成后重建条目
+ * 即可显示真实缩略图。这样打开面板时不需要一次性解析十几 MB。
+ *
  * @param {{icons: Record<string, string[]>}} index
  * @param {boolean} fill 是否使用实心变体
  */
@@ -65,25 +130,61 @@ export const buildMaterialSymbolItems = (index, fill) => {
     for (const {style, tag} of MATERIAL_SYMBOL_STYLES) {
         const names = (index.icons && index.icons[style]) || [];
         for (const name of names) {
-            items.push({
+            const item = {
                 name,
-                key: `material-symbols/${style}/${buildIconFile(name, fill)}`,
+                key: `material-symbols/${style}/${archiveKey(name, fill)}`,
                 tags: [tag],
                 // 图标有三千多个，混进「所有」会把常规角色挤出视野
                 hiddenInAllTag: true,
-                rawURL: `${LIBRARY_BASE}/${style}/${buildIconFile(name, fill)}`,
-                hiwarpIcon: {style, name}
+                hiwarpIcon: {style, name, fill}
+            };
+            Object.defineProperty(item, 'rawURL', {
+                enumerable: true,
+                get () {
+                    const svg = getMaterialSymbolSvg(style, name, fill);
+                    return svg ? svgToDataUrl(svg) : TRANSPARENT_ICON;
+                }
             });
+            items.push(item);
         }
     }
     return items;
 };
 
+// 已创建但还没落盘的图标资源：assetId -> asset。
+// sb3 反序列化不会带走内联 asset，造型最终会走 storage.load(assetId)，
+// 所以必须让 storage 自己能找到它。
+const iconAssets = new Map();
+const registeredStorages = new WeakSet();
+
 /**
- * 把 SVG 的显示尺寸统一成目标尺寸（viewBox 保持不变，内容自动缩放）。
- * @param {string} text SVG 源码
- * @param {number} size 目标边长
+ * 给 storage 注册一个高优先级 helper：命中内存里的图标资源就返回，
+ * 未命中**同步返回 null** 让 scratch-storage 继续试下一个 helper。
+ * （返回 Promise.resolve(null) 会被当成"找到了一个 null"，导致全站造型损坏。）
+ * @param {object} storage scratch-storage 实例
  */
+export const ensureIconAssetHelper = storage => {
+    if (registeredStorages.has(storage)) return;
+    registeredStorages.add(storage);
+    storage.addHelper({
+        load: (assetType, assetId) => {
+            const asset = iconAssets.get(assetId);
+            return asset ? Promise.resolve(asset) : null;
+        }
+    }, 1000);
+};
+
+/**
+ * 把一个图标资源登记进内存表并确保 storage 已挂上 helper。
+ * @param {object} storage scratch-storage 实例
+ * @param {object} asset 由 storage.createAsset 返回的资源
+ */
+export const registerIconAsset = (storage, asset) => {
+    iconAssets.set(asset.assetId, asset);
+    ensureIconAssetHelper(storage);
+    return asset;
+};
+
 const resizeSvg = (text, size) => {
     if (typeof text !== 'string' || !text) return text;
     const openTag = text.match(/<svg\b[^>]*>/i);
@@ -123,58 +224,9 @@ const resizeSvg = (text, size) => {
 export {resizeSvg as resizeMaterialSymbolSvg};
 
 /**
- * 取一个图标的 SVG 源码。
- * @param {{rawURL: string}} item 角色库条目
- */
-export const fetchMaterialSymbolSvg = item => fetch(item.rawURL)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`图标读取失败: HTTP ${response.status}`);
-        }
-        return response.text();
-    });
-
-// 已创建但还没落盘的图标资源：assetId -> asset。
-// 原因见 insertMaterialSymbol 里的注释：sb3 反序列化不会带走内联 asset，
-// 造型最终会走 storage.load(assetId)，所以必须让 storage 自己能找到它。
-const iconAssets = new Map();
-const registeredStorages = new WeakSet();
-
-/**
- * 给 storage 注册一个高优先级 helper：命中内存里的图标资源就返回，
- * 未命中返回 null 让 scratch-storage 继续试下一个 helper。
- * @param {object} storage scratch-storage 实例
- */
-export const ensureIconAssetHelper = storage => {
-    if (registeredStorages.has(storage)) return;
-    registeredStorages.add(storage);
-    storage.addHelper({
-        // 注意：没命中时必须「同步返回 null」。scratch-storage 用
-        // `if (loading === null) return tryNextHelper();` 判断"换下一个 helper"，
-        // 返回 Promise.resolve(null) 会被当成"找到了，值是 null"，
-        // 于是所有非图标资源都拿不到 → 全部造型变成坏造型（舞台上显示 ?）。
-        load: (assetType, assetId) => {
-            const asset = iconAssets.get(assetId);
-            return asset ? Promise.resolve(asset) : null;
-        }
-    }, 1000);
-};
-
-/**
- * 把一个图标资源登记进内存表并确保 storage 已挂上 helper。
- * @param {object} storage scratch-storage 实例
- * @param {object} asset 由 storage.createAsset 返回的资源
- */
-export const registerIconAsset = (storage, asset) => {
-    iconAssets.set(asset.assetId, asset);
-    ensureIconAssetHelper(storage);
-    return asset;
-};
-
-/**
  * 把图标作为新角色插入项目。
  * @param {object} vm scratch-vm 实例
- * @param {{name: string, rawURL: string}} item 角色库条目
+ * @param {{hiwarpIcon: {style: string, name: string, fill: boolean}}} item 角色库条目
  */
 export const insertMaterialSymbol = async (vm, item) => {
     const storage = vm && vm.runtime && vm.runtime.storage;
@@ -182,13 +234,21 @@ export const insertMaterialSymbol = async (vm, item) => {
         throw new Error('当前 VM 没有素材存储，无法插入图标');
     }
 
-    const svg = resizeSvg(await fetchMaterialSymbolSvg(item), MATERIAL_SYMBOL_STAGE_SIZE);
+    const {style, name, fill} = item.hiwarpIcon || {};
+    let svg = getMaterialSymbolSvg(style, name, fill);
+    if (!svg) {
+        await loadMaterialSymbolsStyle(style);
+        svg = getMaterialSymbolSvg(style, name, fill);
+    }
+    if (!svg) {
+        throw new Error(`找不到图标: ${style}/${archiveKey(name, fill)}`);
+    }
+
+    const resized = resizeSvg(svg, MATERIAL_SYMBOL_STAGE_SIZE);
     // 必须是字节而不是字符串：scratch-render 的矢量图路径用 TextDecoder.decode()
-    // 处理素材，收到字符串会抛 "parameter 1 is not of type 'ArrayBuffer'"，
-    // 造型随即变成坏造型（舞台上显示 ?）。
-    const bytes = new TextEncoder().encode(svg);
+    // 处理素材，收到字符串会抛 "parameter 1 is not of type 'ArrayBuffer'"。
+    const bytes = new TextEncoder().encode(resized);
     const asset = storage.createAsset(storage.AssetType.ImageVector, 'svg', bytes, null, true);
-    // 先登记，等 sb3 反序列化走到 storage.load 时就能拿到（见 ensureIconAssetHelper）
     registerIconAsset(storage, asset);
 
     const half = MATERIAL_SYMBOL_STAGE_SIZE / 2;
@@ -196,7 +256,7 @@ export const insertMaterialSymbol = async (vm, item) => {
 
     const sprite = {
         isStage: false,
-        name: item.name,
+        name,
         variables: {},
         lists: {},
         broadcasts: {},
@@ -204,7 +264,7 @@ export const insertMaterialSymbol = async (vm, item) => {
         comments: {},
         currentCostume: 0,
         costumes: [{
-            name: item.name,
+            name,
             dataFormat: 'svg',
             assetId: asset.assetId,
             md5ext,
